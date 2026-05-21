@@ -1,0 +1,97 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "company_name",
+    "brand_name",
+    "region",
+    "industry",
+    "contact_name",
+    "email",
+    "source_url",
+    "customer_segment",
+    "customer_problem",
+    "recommended_product",
+    "selection_reason",
+    "expected_needs",
+    "value_proposition",
+    "first_question",
+    "next_action",
+    "email_subject",
+    "email_draft",
+    "approval_required",
+    "approval_reason",
+    "security_note",
+    "containerfarm_check_required",
+    "facility_asset_signal",
+    "budget_investment_signal",
+    "decision_maker_signal",
+    "disqualification_result",
+    "readiness_score",
+    "score_reason",
+    "lead_grade",
+    "product_confidence",
+    "disqualification_reason"
+  ],
+  "properties": {
+    "company_name": { "type": "string" },
+    "brand_name": { "type": "string" },
+    "region": { "type": "string" },
+    "industry": { "type": "string" },
+    "contact_name": { "type": "string" },
+    "email": { "type": "string" },
+    "source_url": { "type": "string" },
+    "customer_segment": { "type": "string" },
+    "customer_problem": { "type": "string" },
+    "recommended_product": {
+      "type": "string",
+      "enum": [
+        "40ft HC ContainerFarm",
+        "AlphaFarm Core",
+        "AlphaCafe",
+        "Alpha Experience Portfolio",
+        "ASEAN Service",
+        "확인 필요"
+      ]
+    },
+    "selection_reason": { "type": "string" },
+    "expected_needs": { "type": "string" },
+    "value_proposition": { "type": "string" },
+    "first_question": { "type": "string" },
+    "next_action": { "type": "string" },
+    "email_subject": { "type": "string" },
+    "email_draft": { "type": "string" },
+    "approval_required": {
+      "type": "string",
+      "enum": ["Y", "N"]
+    },
+    "approval_reason": { "type": "string" },
+    "security_note": { "type": "string" },
+    "containerfarm_check_required": {
+      "type": "string",
+      "enum": ["Y", "N"]
+    },
+    "facility_asset_signal": { "type": "string" },
+    "budget_investment_signal": { "type": "string" },
+    "decision_maker_signal": { "type": "string" },
+    "disqualification_result": {
+      "type": "string",
+      "enum": ["통과", "보류"]
+    },
+    "readiness_score": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "score_reason": { "type": "string" },
+    "lead_grade": {
+      "type": "string",
+      "enum": ["A", "B", "C", "보류"]
+    },
+    "product_confidence": {
+      "type": "string",
+      "enum": ["높음", "중간", "낮음"]
+    },
+    "disqualification_reason": { "type": "string" }
+  }
+}

@@ -1,0 +1,102 @@
+[
+  {
+    "name": "프리미엄 베이커리 A급",
+    "product": "AlphaCafe",
+    "customer_type": "프리미엄 베이커리",
+    "source": "공식 홈페이지 / Naver Place",
+    "facility_asset_signal": "본점, 백화점 입점, 복수매장",
+    "budget_investment_signal": "프리미엄 딸기 케이크 시즌 SKU 운영",
+    "decision_maker_signal": "브랜드총괄 및 본점 확인",
+    "expected_grade": "A"
+  },
+  {
+    "name": "식품 유통법인 A급",
+    "product": "AlphaFarm Core",
+    "customer_type": "식품 유통법인",
+    "source": "공식 홈페이지 / DART",
+    "facility_asset_signal": "창고 보유, 물류센터, 법인 본사",
+    "budget_investment_signal": "시설투자, 신규사업 검토",
+    "decision_maker_signal": "구매팀장, 신사업 담당",
+    "expected_grade": "A"
+  },
+  {
+    "name": "호텔 라운지 B급",
+    "product": "Alpha Experience Portfolio",
+    "customer_type": "호텔 라운지",
+    "source": "공식 홈페이지",
+    "facility_asset_signal": "호텔 로비, 라운지 공간 운영",
+    "budget_investment_signal": "",
+    "decision_maker_signal": "세일즈팀 연결 가능",
+    "expected_grade": "B"
+  },
+  {
+    "name": "ASEAN 해외사업 B급",
+    "product": "ASEAN Service",
+    "customer_type": "베이커리 브랜드",
+    "source": "KOTRA / 공식 홈페이지",
+    "facility_asset_signal": "법인 본사",
+    "budget_investment_signal": "수출바우처, 해외진출 검토",
+    "decision_maker_signal": "해외사업팀",
+    "expected_grade": "B"
+  },
+  {
+    "name": "인스타 기반 카페 C급",
+    "product": "AlphaCafe",
+    "customer_type": "카페",
+    "source": "Instagram",
+    "facility_asset_signal": "단일 매장",
+    "budget_investment_signal": "",
+    "decision_maker_signal": "",
+    "expected_grade": "C"
+  },
+  {
+    "name": "비공식 연락처 보류",
+    "product": "AlphaCafe",
+    "customer_type": "베이커리",
+    "source": "블로그 댓글",
+    "facility_asset_signal": "",
+    "budget_investment_signal": "",
+    "decision_maker_signal": "",
+    "expected_grade": "보류"
+  },
+  {
+    "name": "Core 토지만 보유 보류",
+    "product": "AlphaFarm Core",
+    "customer_type": "투자형 고객",
+    "source": "소개",
+    "facility_asset_signal": "토지 보유, 창고 없음, 건물 없음, 담보 불명확",
+    "budget_investment_signal": "투자 문의",
+    "decision_maker_signal": "대표",
+    "expected_grade": "보류"
+  },
+  {
+    "name": "40ft 인프라 미확인 보류",
+    "product": "40ft HC ContainerFarm",
+    "customer_type": "교육기관",
+    "source": "공식 홈페이지",
+    "facility_asset_signal": "부지만 있음, 냉방장비 없음, 전력 미확인, 배수 미확인",
+    "budget_investment_signal": "교육 검토",
+    "decision_maker_signal": "교육 담당",
+    "expected_grade": "보류"
+  },
+  {
+    "name": "가격 ROI 선요청 보류",
+    "product": "AlphaFarm Core",
+    "customer_type": "식품기업",
+    "source": "공식 홈페이지",
+    "facility_asset_signal": "창고 보유",
+    "budget_investment_signal": "ROI, 가격, 회수기간 자료 요청",
+    "decision_maker_signal": "대표",
+    "expected_grade": "보류"
+  },
+  {
+    "name": "농업기술센터 B급",
+    "product": "40ft HC ContainerFarm",
+    "customer_type": "농업기술센터",
+    "source": "공식 홈페이지",
+    "facility_asset_signal": "교육장, 스마트팜 테스트베드, 전력 설비",
+    "budget_investment_signal": "실증, 교육 파일럿",
+    "decision_maker_signal": "원예기술팀",
+    "expected_grade": "B"
+  }
+]

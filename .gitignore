@@ -1,0 +1,13 @@
+.clasp.json
+.clasprc.json
+.env
+.env.*
+customer-data/
+exports/
+*.csv
+*.xlsx
+*.log
+node_modules/
+영업 DB/
+!templates/*.csv
+!tests/*.csv

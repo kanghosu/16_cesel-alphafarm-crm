@@ -1,0 +1,17 @@
+{
+  "name": "cesel-alphafarm-crm",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CESeL AlphaFarm Google Apps Script CRM automation with lead quality scoring.",
+  "scripts": {
+    "test": "node tests/lead_quality.test.js && node tests/project_artifacts.test.js && node tests/apps_script_syntax.test.js",
+    "gas:login": "clasp login",
+    "gas:create": "clasp create-script --title \"CESeL AlphaFarm CRM\" --type sheets --parentId 1kVbvt5ksr-Kw5T-8FfAOmEYqKRTLyah8Gc4ThvhRBtk",
+    "gas:push": "clasp push",
+    "gas:open": "clasp open",
+    "gas:status": "clasp status"
+  },
+  "devDependencies": {
+    "@google/clasp": "^3.3.0"
+  }
+}
