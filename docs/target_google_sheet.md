@@ -11,22 +11,26 @@ The Apps Script code uses this ID as the default target through `src/Config.gs`.
 
 Use the Google account that owns or can edit the sheet.
 
-```bash
-npm install -g @google/clasp
-clasp login
-clasp create-script --title "CESeL AlphaFarm CRM" --type sheets --parentId "1kVbvt5ksr-Kw5T-8FfAOmEYqKRTLyah8Gc4ThvhRBtk"
-clasp push
-clasp open
-```
+Do not use `clasp create-script --type sheets` for this existing sheet. It can create a new spreadsheet instead of binding to the existing one.
 
-If you create the Apps Script project manually from the sheet:
+Use the manual bound-script flow:
 
 1. Open the sheet.
 2. Go to `Extensions > Apps Script`.
 3. Copy the generated script ID.
 4. Copy `.clasp.json.example` to `.clasp.json`.
 5. Replace `PASTE_APPS_SCRIPT_ID_HERE` with the script ID.
-6. Run `clasp push`.
+6. Run `npm run gas:push`.
+
+PowerShell shortcut:
+
+```powershell
+npm run gas:login
+Copy-Item .clasp.json.example .clasp.json
+notepad .clasp.json
+npm run gas:push
+npm run gas:open
+```
 
 ## First Run
 

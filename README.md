@@ -36,13 +36,15 @@ npm install -g @google/clasp
 clasp login
 ```
 
-2. Create the Apps Script project bound to the target sheet.
+2. Open the target sheet and create or open its bound Apps Script project.
 
-```bash
-clasp create-script --title "CESeL AlphaFarm CRM" --type sheets --parentId "1kVbvt5ksr-Kw5T-8FfAOmEYqKRTLyah8Gc4ThvhRBtk"
+```text
+Extensions > Apps Script
 ```
 
-If you already created the Apps Script project from the sheet UI, copy `.clasp.json.example` to `.clasp.json` and paste the script ID.
+Copy the Apps Script ID from `Project Settings`, then copy `.clasp.json.example` to `.clasp.json` and paste the script ID.
+
+Do not use `clasp create-script --type sheets` for this existing sheet; it can create a new spreadsheet instead of binding to the current one.
 
 3. Push the Apps Script files.
 
@@ -98,7 +100,7 @@ Typical local development commands:
 ```bash
 npm test
 npm run gas:login
-npm run gas:create
+copy .clasp.json.example .clasp.json
 npm run gas:push
 npm run gas:open
 ```

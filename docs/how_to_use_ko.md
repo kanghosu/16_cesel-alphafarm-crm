@@ -8,7 +8,6 @@
 npm install
 npm test
 npm run gas:login
-npm run gas:create
 npm run gas:push
 ```
 
@@ -18,12 +17,27 @@ npm run gas:push
 https://docs.google.com/spreadsheets/d/1kVbvt5ksr-Kw5T-8FfAOmEYqKRTLyah8Gc4ThvhRBtk/edit
 ```
 
-이미 시트에서 `확장 프로그램 > Apps Script`로 프로젝트를 만든 경우에는 `npm run gas:create` 대신 다음 순서로 진행합니다.
+기존 구글시트에 붙이려면 `npm run gas:create`를 쓰지 않습니다. 해당 명령은 새 스프레드시트를 만들 수 있습니다.
 
-1. Apps Script 화면에서 script ID를 복사합니다.
-2. `.clasp.json.example`을 `.clasp.json`으로 복사합니다.
-3. `PASTE_APPS_SCRIPT_ID_HERE`를 script ID로 바꿉니다.
-4. `npm run gas:push`를 실행합니다.
+아래 순서로 기존 시트에 바인딩된 Apps Script 프로젝트 ID를 가져옵니다.
+
+1. 구글시트 상단 메뉴에서 `확장 프로그램 > Apps Script`를 누릅니다.
+2. Apps Script 화면이 열리면 왼쪽 톱니바퀴 `프로젝트 설정`을 누릅니다.
+3. `스크립트 ID`를 복사합니다. URL의 `/d/`와 `/edit` 사이 값도 script ID입니다.
+4. `.clasp.json.example`을 `.clasp.json`으로 복사합니다.
+5. `PASTE_APPS_SCRIPT_ID_HERE`를 script ID로 바꿉니다.
+6. `npm run gas:push`를 실행합니다.
+
+정리하면 기존 시트 연결은 다음 방식입니다.
+
+```powershell
+npm run gas:login
+Copy-Item .clasp.json.example .clasp.json
+notepad .clasp.json
+npm run gas:push
+```
+
+`notepad .clasp.json`에서 script ID만 바꿔 저장하면 됩니다.
 
 ## 2. 구글시트에서 처음 한 번만 하는 설정
 

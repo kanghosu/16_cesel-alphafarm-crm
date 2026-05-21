@@ -6,9 +6,10 @@
   "scripts": {
     "test": "node tests/lead_quality.test.js && node tests/project_artifacts.test.js && node tests/apps_script_syntax.test.js",
     "gas:login": "clasp login",
-    "gas:create": "clasp create-script --title \"CESeL AlphaFarm CRM\" --type sheets --parentId 1kVbvt5ksr-Kw5T-8FfAOmEYqKRTLyah8Gc4ThvhRBtk",
+    "gas:create-new-sheet": "clasp create-script --title \"CESeL AlphaFarm CRM\" --type sheets",
     "gas:push": "clasp push",
-    "gas:open": "clasp open",
+    "gas:open": "clasp open-script",
+    "gas:open-sheet": "clasp open-container",
     "gas:status": "clasp status"
   },
   "devDependencies": {
