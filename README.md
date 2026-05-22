@@ -79,6 +79,10 @@ The scoring engine assigns up to 100 points across:
 - 제품군 적합도
 - 공식 전화번호
 - 공식 이메일
+- 권장 연락방법
+- 메일 제목
+- 메일 초안
+- 제안 현황
 - 연락채널 메모
 - 긴급 니즈
 - 출처 신뢰도

@@ -17,8 +17,15 @@ var WebLeadDb = (function () {
     "지역",
     "공식 전화번호",
     "공식 이메일",
-    "연락채널 메모",
     "담당자",
+    "권장 연락방법",
+    "메일 제목",
+    "메일 초안",
+    "제안 현황",
+    "마지막 제안일",
+    "다음 연락일",
+    "후속 연락 메모",
+    "연락채널 메모",
     "첫 접촉 포인트",
     "추정 니즈",
     "시설/자산 단서",
@@ -355,6 +362,7 @@ var WebLeadDb = (function () {
     var sheet = getOrCreateSheet_(CrmConfig.getSpreadsheet(), WEB_SHEET);
     rebuildSheetByHeaderOrder_(sheet, WEB_HEADERS);
     enrichKnownContactDetails_(sheet);
+    enrichMailingFields_(sheet);
     applyWebLeadDbView();
     return WEB_SHEET + " setup complete";
   }
@@ -363,6 +371,7 @@ var WebLeadDb = (function () {
     var sheet = getOrCreateSheet_(CrmConfig.getSpreadsheet(), WEB_SHEET);
     rebuildSheetByHeaderOrder_(sheet, WEB_HEADERS);
     enrichKnownContactDetails_(sheet);
+    enrichMailingFields_(sheet);
     applySheetFormat_(sheet);
     return WEB_SHEET + " view improved";
   }
@@ -372,6 +381,7 @@ var WebLeadDb = (function () {
     var sheet = getOrCreateSheet_(ss, WEB_SHEET);
     rebuildSheetByHeaderOrder_(sheet, WEB_HEADERS);
     enrichKnownContactDetails_(sheet);
+    enrichMailingFields_(sheet);
 
     var values = sheet.getDataRange().getValues();
     if (values.length < 2) {
@@ -441,6 +451,11 @@ var WebLeadDb = (function () {
       setCell_(row, headerMap, "공식 이메일", item.email || firstValue_(extractEmails_(item.contact)));
       setCell_(row, headerMap, "연락채널 메모", item.contactMemo || extractContactMemo_(item.contact));
       setCell_(row, headerMap, "담당자", item.manager || "");
+      setCell_(row, headerMap, "권장 연락방법", buildRecommendedContactMethod_(item));
+      setCell_(row, headerMap, "메일 제목", buildEmailSubject_(item));
+      setCell_(row, headerMap, "메일 초안", buildEmailDraft_(item));
+      setCell_(row, headerMap, "제안 현황", "메일초안작성");
+      setCell_(row, headerMap, "후속 연락 메모", "대표 컨펌 후 공식 이메일/문의 채널로 접수. 발송 후 제안 현황과 마지막 제안일 업데이트.");
       setCell_(row, headerMap, "첫 접촉 포인트", item.point);
       setCell_(row, headerMap, "추정 니즈", item.needs);
       setCell_(row, headerMap, "시설/자산 단서", item.asset);
@@ -505,7 +520,10 @@ var WebLeadDb = (function () {
       setCell_(row, targetMap, "우선순위", getCell_(webRow, webMap, "A/B/C 등급"));
       setCell_(row, targetMap, "접촉상태", getCell_(webRow, webMap, "접촉단계") || "미접촉");
       setCell_(row, targetMap, "메모", [
+        getCell_(webRow, webMap, "제안 현황"),
+        getCell_(webRow, webMap, "메일 제목"),
         getCell_(webRow, webMap, "첫 접촉 포인트"),
+        getCell_(webRow, webMap, "후속 연락 메모"),
         getCell_(webRow, webMap, "연락채널 메모"),
         getCell_(webRow, webMap, "크롤링메모")
       ].join(" / ").trim());
@@ -652,6 +670,159 @@ var WebLeadDb = (function () {
     }
   }
 
+  function enrichMailingFields_(sheet) {
+    var values = sheet.getDataRange().getValues();
+    if (values.length < 2) return;
+    var headerMap = getHeaderMap_(values[0]);
+    for (var i = 1; i < values.length; i += 1) {
+      if (!getCell_(values[i], headerMap, "업체명")) continue;
+      var rowNumber = i + 1;
+      var item = rowToMailItem_(values[i], headerMap);
+      if (!getCell_(values[i], headerMap, "권장 연락방법")) {
+        writeByHeader_(sheet, rowNumber, "권장 연락방법", buildRecommendedContactMethod_(item));
+      }
+      if (!getCell_(values[i], headerMap, "메일 제목")) {
+        writeByHeader_(sheet, rowNumber, "메일 제목", buildEmailSubject_(item));
+      }
+      if (!getCell_(values[i], headerMap, "메일 초안")) {
+        writeByHeader_(sheet, rowNumber, "메일 초안", buildEmailDraft_(item));
+      }
+      if (!getCell_(values[i], headerMap, "제안 현황")) {
+        writeByHeader_(sheet, rowNumber, "제안 현황", defaultProposalStatus_(getCell_(values[i], headerMap, "접촉단계")));
+      }
+      if (!getCell_(values[i], headerMap, "후속 연락 메모")) {
+        writeByHeader_(sheet, rowNumber, "후속 연락 메모", "발송/접수 후 마지막 제안일과 다음 연락일을 업데이트.");
+      }
+    }
+  }
+
+  function rowToMailItem_(row, headerMap) {
+    return {
+      company: getCell_(row, headerMap, "업체명"),
+      product: getCell_(row, headerMap, "제품군"),
+      type: getCell_(row, headerMap, "고객유형"),
+      region: getCell_(row, headerMap, "지역"),
+      phone: getOfficialPhone_(row, headerMap),
+      email: getOfficialEmail_(row, headerMap),
+      contact: getOfficialContactText_(row, headerMap),
+      manager: getCell_(row, headerMap, "담당자"),
+      contactMemo: getCell_(row, headerMap, "연락채널 메모"),
+      point: getCell_(row, headerMap, "첫 접촉 포인트"),
+      needs: getCell_(row, headerMap, "추정 니즈")
+    };
+  }
+
+  function buildRecommendedContactMethod_(item) {
+    var text = [
+      item.company,
+      item.product,
+      item.type,
+      item.contact,
+      item.contactMemo
+    ].join(" ");
+    if (item.email) return "이메일 발송 후 2~3영업일 내 전화 확인";
+    if (containsAnyText_(text, ["채팅", "고객상담실"])) return "채팅상담으로 담당부서/접수창구 확인 후 이메일 발송";
+    if (containsAnyText_(text, ["문의폼", "contact us", "고객센터", "공식"])) return "공식 문의/고객센터 접수 후 전화로 담당부서 확인";
+    if (item.phone) return "전화로 담당부서 확인 후 이메일 주소 요청";
+    return "공식 채널 추가 확인 후 연락";
+  }
+
+  function buildEmailSubject_(item) {
+    var company = item.company || "{회사명}";
+    var text = [item.product, item.type, item.company].join(" ");
+    if (containsAnyText_(text, ["백화점", "푸드홀", "f&b", "델리", "디저트", "alphacafe"])) {
+      return "[제휴/입점 문의] " + company + " F&B·푸드홀 프리미엄 딸기 디저트/팝업 제안";
+    }
+    if (containsAnyText_(text, ["호텔", "라운지", "experience", "mice"])) {
+      return "[제휴 문의] " + company + " F&B·라운지 프리미엄 딸기 디저트/라이브 쇼케이스 제안";
+    }
+    if (containsAnyText_(text, ["40ft", "농업기술센터", "실증", "교육"])) {
+      return "[실증/교육 문의] " + company + " 죽향 딸기 컨테이너팜 파일럿 검토 문의";
+    }
+    if (containsAnyText_(text, ["asean", "해외", "글로벌"])) {
+      return "[해외진출/실증 문의] " + company + " ASEAN 현지 검증·사업화 협력 문의";
+    }
+    return "[B2B 제안] " + company + " 프리미엄 죽향 딸기 안정생산·공급 협업 문의";
+  }
+
+  function buildEmailDraft_(item) {
+    var company = item.company || "귀사";
+    var bodyType = [item.product, item.type, item.company].join(" ");
+    var proposalLines = buildProposalLines_(bodyType);
+    return [
+      "안녕하세요.",
+      "쎄슬프라이머스 영업·마케팅 담당 강호수 프로입니다.",
+      "",
+      company + " 담당 부서와 연결 가능한 AlphaFarm 제안 건으로 연락드립니다.",
+      "",
+      "AlphaFarm은 프리미엄 죽향 딸기를 안정적으로 재배하고,",
+      "이를 디저트·생과·소포장·음료 또는 라이브 재배 쇼케이스로 연결하는",
+      "프리미엄 딸기 비즈니스 시스템입니다.",
+      "",
+      company + " 관점에서는 아래 방향으로 검토 가능할 것으로 보입니다.",
+      "",
+      proposalLines,
+      "",
+      "가격이나 수익률 자료를 먼저 보내려는 목적은 아니며,",
+      "담당 부서 적합성과 제안 접수 절차를 먼저 확인드리고자 합니다.",
+      "",
+      "가능하시다면 관련 담당자 또는 제안 접수 창구를 안내 부탁드립니다.",
+      "검토 가능하신 경우 10~15분 정도 화상 또는 방문으로 간단히 설명드리겠습니다.",
+      "",
+      "감사합니다.",
+      "",
+      "강호수 프로",
+      "쎄슬프라이머스 / 영업·마케팅",
+      "rkdghtn6036@gmail.com"
+    ].join("\n");
+  }
+
+  function buildProposalLines_(text) {
+    if (containsAnyText_(text, ["백화점", "푸드홀", "f&b", "델리", "디저트", "alphacafe"])) {
+      return [
+        "1. 프리미엄 죽향 딸기 기반 디저트/생과/소포장 상품 협업",
+        "2. 푸드홀·델리·베이커리·디저트 팝업 연계",
+        "3. 실제 딸기가 자라는 라이브 재배 쇼케이스를 활용한 공간 차별화"
+      ].join("\n");
+    }
+    if (containsAnyText_(text, ["호텔", "라운지", "experience", "mice"])) {
+      return [
+        "1. 시즌 디저트/뷔페/라운지 메뉴용 프리미엄 죽향 딸기 협업",
+        "2. 로비·라운지·F&B 공간의 라이브 재배 쇼케이스 연출",
+        "3. 기업행사·프로모션용 프리미엄 딸기 경험 콘텐츠"
+      ].join("\n");
+    }
+    if (containsAnyText_(text, ["40ft", "농업기술센터", "실증", "교육"])) {
+      return [
+        "1. 대규모 투자 전 소형 파일럿 실증",
+        "2. 교육·체험형 스마트농업 콘텐츠 연계",
+        "3. 컨테이너·냉방·전력·배수 등 현장 조건 확인 후 검토"
+      ].join("\n");
+    }
+    if (containsAnyText_(text, ["asean", "해외", "글로벌"])) {
+      return [
+        "1. ASEAN 현지 시장검증 및 파트너 발굴",
+        "2. 고온다습 환경의 저온·제습·품질 이슈 검토",
+        "3. 현지 실증 기반 사업화 제안 구조 검토"
+      ].join("\n");
+    }
+    return [
+      "1. 프리미엄 죽향 딸기의 안정 생산·공급 협업",
+      "2. B2B 식자재/디저트/신선식품 채널 연계",
+      "3. 담당 부서 적합성 확인 후 파일럿 검토"
+    ].join("\n");
+  }
+
+  function defaultProposalStatus_(contactStage) {
+    if (contactStage === "메일발송") return "메일발송";
+    if (contactStage === "온라인접수") return "온라인접수";
+    if (contactStage === "회신옴") return "회신옴";
+    if (contactStage === "미팅예정") return "미팅예정";
+    if (contactStage === "미팅완료") return "미팅완료";
+    if (contactStage === "부적합") return "부적합";
+    return "메일초안작성";
+  }
+
   function ensureHeaders_(sheet, headers) {
     var lastColumn = Math.max(sheet.getLastColumn(), 1);
     var existing = sheet.getRange(1, 1, 1, lastColumn).getValues()[0].filter(String);
@@ -676,7 +847,7 @@ var WebLeadDb = (function () {
     var headerMap = getHeaderMap_(sheet.getRange(1, 1, 1, lastColumn).getValues()[0]);
 
     sheet.setFrozenRows(1);
-    sheet.setFrozenColumns(8);
+    sheet.setFrozenColumns(10);
     sheet.getRange(1, 1, lastRow, lastColumn)
       .setFontFamily("Arial")
       .setFontSize(10)
@@ -705,19 +876,30 @@ var WebLeadDb = (function () {
       "지역": 120,
       "공식 전화번호": 130,
       "공식 이메일": 220,
-      "연락채널 메모": 340,
       "담당자": 150,
+      "권장 연락방법": 210,
+      "메일 제목": 260,
+      "메일 초안": 420,
+      "제안 현황": 110,
+      "마지막 제안일": 90,
+      "다음 연락일": 90,
+      "후속 연락 메모": 240,
+      "연락채널 메모": 340,
       "첫 접촉 포인트": 260,
       "추정 니즈": 260,
       "시설/자산 단서": 240,
       "예산/투자 단서": 240,
       "의사결정자 단서": 220,
+      "웹출처URL": 100,
+      "수집일": 80,
+      "수집채널": 80,
+      "검색쿼리": 80,
       "점수 사유": 360,
       "승격차단사유": 280,
       "크롤링메모": 280
     });
 
-    ["다음액션", "연락채널 메모", "첫 접촉 포인트", "추정 니즈", "시설/자산 단서", "예산/투자 단서", "의사결정자 단서", "점수 사유", "승격차단사유", "크롤링메모"].forEach(function (header) {
+    ["다음액션", "권장 연락방법", "메일 제목", "메일 초안", "후속 연락 메모", "연락채널 메모", "첫 접촉 포인트", "추정 니즈", "시설/자산 단서", "예산/투자 단서", "의사결정자 단서", "점수 사유", "승격차단사유", "크롤링메모"].forEach(function (header) {
       var col = headerMap[header];
       if (col !== undefined) sheet.getRange(2, col + 1, Math.max(sheet.getMaxRows() - 1, 1), 1).setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP);
     });
@@ -726,6 +908,7 @@ var WebLeadDb = (function () {
     applyValidation_(sheet, headerMap, "고객DB승격근거", ["없음", "회신", "오프라인접점", "연락처확보", "담당자확인"]);
     applyValidation_(sheet, headerMap, "타깃리스트반영", ["Y", "N", ""]);
     applyValidation_(sheet, headerMap, "A/B/C 등급", ["A", "B", "C", "보류"]);
+    applyValidation_(sheet, headerMap, "제안 현황", ["미제안", "메일초안작성", "컨펌대기", "메일발송", "온라인접수", "전화시도", "회신대기", "회신옴", "미팅예정", "미팅완료", "보류", "부적합"]);
     applyValidation_(sheet, headerMap, "제품군", ["AlphaCafe", "Alpha Experience Portfolio", "AlphaFarm Core", "40ft HC ContainerFarm", "ASEAN Service", "확인 필요"]);
 
     if (sheet.getFilter()) sheet.getFilter().remove();
@@ -780,6 +963,15 @@ var WebLeadDb = (function () {
     textRule("A/B/C 등급", "B", "#0ea5e9", "#ffffff");
     textRule("A/B/C 등급", "C", "#facc15");
     textRule("A/B/C 등급", "보류", "#fecaca");
+    textRule("제안 현황", "메일초안작성", "#e0f2fe");
+    textRule("제안 현황", "컨펌대기", "#fef3c7");
+    textRule("제안 현황", "메일발송", "#e0e7ff");
+    textRule("제안 현황", "온라인접수", "#dbeafe");
+    textRule("제안 현황", "회신대기", "#fef9c3");
+    textRule("제안 현황", "회신옴", "#dcfce7");
+    textRule("제안 현황", "미팅예정", "#ccfbf1");
+    textRule("제안 현황", "미팅완료", "#bbf7d0");
+    textRule("제안 현황", "보류", "#fee2e2");
     sheet.setConditionalFormatRules(rules);
   }
 
@@ -892,6 +1084,13 @@ var WebLeadDb = (function () {
 
   function normalizeText_(value) {
     return String(value || "").toLowerCase().replace(/\s+/g, "").trim();
+  }
+
+  function containsAnyText_(text, keywords) {
+    var normalized = normalizeText_(text);
+    return keywords.some(function (keyword) {
+      return normalized.indexOf(normalizeText_(keyword)) !== -1;
+    });
   }
 
   return {

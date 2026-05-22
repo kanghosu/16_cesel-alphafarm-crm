@@ -65,6 +65,14 @@ for (const header of [
   "타깃리스트반영",
   "공식 전화번호",
   "공식 이메일",
+  "담당자",
+  "권장 연락방법",
+  "메일 제목",
+  "메일 초안",
+  "제안 현황",
+  "마지막 제안일",
+  "다음 연락일",
+  "후속 연락 메모",
   "연락채널 메모"
 ]) {
   assert.ok(webCsv.split(/\r?\n/)[0].includes(header), `${header} missing from web crawling template header`);
