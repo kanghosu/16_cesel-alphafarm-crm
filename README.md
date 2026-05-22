@@ -77,7 +77,9 @@ The scoring engine assigns up to 100 points across:
 - 예산·투자 신호
 - 의사결정자 접근성
 - 제품군 적합도
-- 공식 연락채널
+- 공식 전화번호
+- 공식 이메일
+- 연락채널 메모
 - 긴급 니즈
 - 출처 신뢰도
 

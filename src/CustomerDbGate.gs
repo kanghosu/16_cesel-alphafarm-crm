@@ -71,6 +71,9 @@ var CustomerDbGate = (function () {
       contactText: [
         lead.contactChannel,
         lead["공식 연락채널"],
+        lead["공식 전화번호"],
+        lead["공식 이메일"],
+        lead["연락채널 메모"],
         lead["공개연락채널"],
         lead.phone,
         lead["연락처"],

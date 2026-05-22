@@ -15,7 +15,9 @@ var WebLeadDb = (function () {
     "제품군",
     "고객유형",
     "지역",
-    "공식 연락채널",
+    "공식 전화번호",
+    "공식 이메일",
+    "연락채널 메모",
     "담당자",
     "첫 접촉 포인트",
     "추정 니즈",
@@ -70,6 +72,10 @@ var WebLeadDb = (function () {
       region: "성남 분당 서현",
       type: "백화점 상품본부·F&B",
       contact: "1661-1114 / 공식 제안·고객지원 채널",
+      phone: "1661-1114",
+      email: "hk-kang@aekyung.kr",
+      manager: "강호경 F&B팀장",
+      contactMemo: "AK 상품본부 F&B팀. 팝업/델리/베이커리&디저트 담당: 조연영 yeonyoung2@aekyung.kr, 이재영 leey.11@aekyung.kr, 김선진 clive420@aekyung.kr. NSC 테넌트 카페/베이커리/레스토랑: 임성수 lss0906@aekyung.kr. 푸드홀/팝업: 김경아 kyungah@aekyung.kr, 한정길 rightway@aekyung.kr.",
       source: "공식 홈페이지 / 리서치 브리프",
       asset: "백화점, 상품본부, 푸드홀, F&B팀",
       budget: "시즌 디저트, 팝업, 신규 F&B 검토 가능성",
@@ -348,6 +354,7 @@ var WebLeadDb = (function () {
   function setupWebLeadDb() {
     var sheet = getOrCreateSheet_(CrmConfig.getSpreadsheet(), WEB_SHEET);
     rebuildSheetByHeaderOrder_(sheet, WEB_HEADERS);
+    enrichKnownContactDetails_(sheet);
     applyWebLeadDbView();
     return WEB_SHEET + " setup complete";
   }
@@ -355,6 +362,7 @@ var WebLeadDb = (function () {
   function applyWebLeadDbView() {
     var sheet = getOrCreateSheet_(CrmConfig.getSpreadsheet(), WEB_SHEET);
     rebuildSheetByHeaderOrder_(sheet, WEB_HEADERS);
+    enrichKnownContactDetails_(sheet);
     applySheetFormat_(sheet);
     return WEB_SHEET + " view improved";
   }
@@ -363,6 +371,7 @@ var WebLeadDb = (function () {
     var ss = CrmConfig.getSpreadsheet();
     var sheet = getOrCreateSheet_(ss, WEB_SHEET);
     rebuildSheetByHeaderOrder_(sheet, WEB_HEADERS);
+    enrichKnownContactDetails_(sheet);
 
     var values = sheet.getDataRange().getValues();
     if (values.length < 2) {
@@ -428,7 +437,10 @@ var WebLeadDb = (function () {
       setCell_(row, headerMap, "제품군", item.product);
       setCell_(row, headerMap, "고객유형", item.type);
       setCell_(row, headerMap, "지역", item.region);
-      setCell_(row, headerMap, "공식 연락채널", item.contact);
+      setCell_(row, headerMap, "공식 전화번호", item.phone || extractPhones_(item.contact).join(" / "));
+      setCell_(row, headerMap, "공식 이메일", item.email || firstValue_(extractEmails_(item.contact)));
+      setCell_(row, headerMap, "연락채널 메모", item.contactMemo || extractContactMemo_(item.contact));
+      setCell_(row, headerMap, "담당자", item.manager || "");
       setCell_(row, headerMap, "첫 접촉 포인트", item.point);
       setCell_(row, headerMap, "추정 니즈", item.needs);
       setCell_(row, headerMap, "시설/자산 단서", item.asset);
@@ -484,7 +496,8 @@ var WebLeadDb = (function () {
       setCell_(row, targetMap, "지역", getCell_(webRow, webMap, "지역"));
       setCell_(row, targetMap, "우선제품", getCell_(webRow, webMap, "제품군"));
       setCell_(row, targetMap, "담당자", getCell_(webRow, webMap, "담당자"));
-      setCell_(row, targetMap, "연락처", getCell_(webRow, webMap, "공식 연락채널"));
+      setCell_(row, targetMap, "연락처", getOfficialPhone_(webRow, webMap));
+      setCell_(row, targetMap, "이메일", getOfficialEmail_(webRow, webMap));
       setCell_(row, targetMap, "출처", [
         getCell_(webRow, webMap, "공개 출처"),
         getCell_(webRow, webMap, "웹출처URL")
@@ -493,6 +506,7 @@ var WebLeadDb = (function () {
       setCell_(row, targetMap, "접촉상태", getCell_(webRow, webMap, "접촉단계") || "미접촉");
       setCell_(row, targetMap, "메모", [
         getCell_(webRow, webMap, "첫 접촉 포인트"),
+        getCell_(webRow, webMap, "연락채널 메모"),
         getCell_(webRow, webMap, "크롤링메모")
       ].join(" / ").trim());
       setCell_(row, targetMap, "시설/자산 단서", getCell_(webRow, webMap, "시설/자산 단서"));
@@ -545,13 +559,14 @@ var WebLeadDb = (function () {
         getCell_(row, headerMap, "웹출처URL"),
         getCell_(row, headerMap, "출처 신뢰도")
       ].join(" "),
-      contactChannel: getCell_(row, headerMap, "공식 연락채널"),
+      contactChannel: getOfficialContactText_(row, headerMap),
       decisionSignal: getCell_(row, headerMap, "의사결정자 단서") || getCell_(row, headerMap, "담당자"),
       assetSignal: getCell_(row, headerMap, "시설/자산 단서"),
       budgetSignal: getCell_(row, headerMap, "예산/투자 단서"),
       urgentNeed: getCell_(row, headerMap, "추정 니즈"),
       notes: [
         getCell_(row, headerMap, "첫 접촉 포인트"),
+        getCell_(row, headerMap, "연락채널 메모"),
         getCell_(row, headerMap, "크롤링메모")
       ].join(" ")
     };
@@ -562,9 +577,14 @@ var WebLeadDb = (function () {
       grade: grade,
       contactStage: getCell_(row, headerMap, "접촉단계"),
       promotionEvidence: getCell_(row, headerMap, "고객DB승격근거"),
-      contactChannel: getCell_(row, headerMap, "공식 연락채널"),
+      contactChannel: getOfficialContactText_(row, headerMap),
       contactName: getCell_(row, headerMap, "담당자"),
-      notes: getCell_(row, headerMap, "크롤링메모")
+      phone: getOfficialPhone_(row, headerMap),
+      email: getOfficialEmail_(row, headerMap),
+      notes: [
+        getCell_(row, headerMap, "연락채널 메모"),
+        getCell_(row, headerMap, "크롤링메모")
+      ].join(" ")
     };
   }
 
@@ -589,8 +609,7 @@ var WebLeadDb = (function () {
     for (var i = 1; i < values.length; i += 1) {
       var oldRow = values[i];
       var newRow = orderedHeaders.map(function (header) {
-        var index = oldMap[header];
-        return index === undefined ? "" : oldRow[index];
+        return getRebuiltCell_(oldRow, oldMap, header);
       });
       rebuilt.push(newRow);
     }
@@ -601,6 +620,36 @@ var WebLeadDb = (function () {
     }
     sheet.getRange(1, 1, rebuilt.length, orderedHeaders.length).setValues(rebuilt);
     sheet.setFrozenRows(1);
+  }
+
+  function getRebuiltCell_(oldRow, oldMap, header) {
+    var index = oldMap[header];
+    if (index !== undefined) return oldRow[index];
+    var legacyContact = getCell_(oldRow, oldMap, "공식 연락채널");
+    if (header === "공식 전화번호") return extractPhones_(legacyContact).join(" / ");
+    if (header === "공식 이메일") return firstValue_(extractEmails_(legacyContact));
+    if (header === "연락채널 메모") return extractContactMemo_(legacyContact);
+    return "";
+  }
+
+  function enrichKnownContactDetails_(sheet) {
+    var values = sheet.getDataRange().getValues();
+    if (values.length < 2) return;
+    var headerMap = getHeaderMap_(values[0]);
+    for (var i = 1; i < values.length; i += 1) {
+      var rowNumber = i + 1;
+      var company = normalizeText_(getCell_(values[i], headerMap, "업체명"));
+      if (company.indexOf("ak플라자") !== -1 && company.indexOf("분당") !== -1) {
+        writeByHeader_(sheet, rowNumber, "공식 전화번호", "1661-1114");
+        writeByHeader_(sheet, rowNumber, "공식 이메일", "hk-kang@aekyung.kr");
+        writeByHeader_(sheet, rowNumber, "담당자", "강호경 F&B팀장");
+        writeByHeader_(sheet, rowNumber, "연락채널 메모", "AK 상품본부 F&B팀. 팝업/델리/베이커리&디저트 담당: 조연영 yeonyoung2@aekyung.kr, 이재영 leey.11@aekyung.kr, 김선진 clive420@aekyung.kr. NSC 테넌트 카페/베이커리/레스토랑: 임성수 lss0906@aekyung.kr. 푸드홀/팝업: 김경아 kyungah@aekyung.kr, 한정길 rightway@aekyung.kr.");
+      }
+      if (company.indexOf("현대백화점") !== -1 && company.indexOf("판교") !== -1) {
+        writeByHeader_(sheet, rowNumber, "공식 전화번호", getCell_(values[i], headerMap, "공식 전화번호") || "1588-3650");
+        writeByHeader_(sheet, rowNumber, "연락채널 메모", getCell_(values[i], headerMap, "연락채널 메모") || "고객상담실/채팅 상담 공식 채널. F&B·푸드홀·디저트 팝업 담당 부서 또는 제안 접수 창구 안내 대기.");
+      }
+    }
   }
 
   function ensureHeaders_(sheet, headers) {
@@ -654,7 +703,10 @@ var WebLeadDb = (function () {
       "제품군": 160,
       "고객유형": 180,
       "지역": 120,
-      "공식 연락채널": 220,
+      "공식 전화번호": 130,
+      "공식 이메일": 220,
+      "연락채널 메모": 340,
+      "담당자": 150,
       "첫 접촉 포인트": 260,
       "추정 니즈": 260,
       "시설/자산 단서": 240,
@@ -665,7 +717,7 @@ var WebLeadDb = (function () {
       "크롤링메모": 280
     });
 
-    ["다음액션", "첫 접촉 포인트", "추정 니즈", "시설/자산 단서", "예산/투자 단서", "의사결정자 단서", "점수 사유", "승격차단사유", "크롤링메모"].forEach(function (header) {
+    ["다음액션", "연락채널 메모", "첫 접촉 포인트", "추정 니즈", "시설/자산 단서", "예산/투자 단서", "의사결정자 단서", "점수 사유", "승격차단사유", "크롤링메모"].forEach(function (header) {
       var col = headerMap[header];
       if (col !== undefined) sheet.getRange(2, col + 1, Math.max(sheet.getMaxRows() - 1, 1), 1).setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP);
     });
@@ -732,10 +784,69 @@ var WebLeadDb = (function () {
   }
 
   function hideLegacyColumns_(sheet, headerMap) {
-    ["검증상태"].forEach(function (header) {
+    ["검증상태", "공식 연락채널", "공개연락채널"].forEach(function (header) {
       var col = headerMap[header];
       if (col !== undefined) sheet.hideColumns(col + 1);
     });
+  }
+
+  function getOfficialPhone_(row, headerMap) {
+    return getCell_(row, headerMap, "공식 전화번호") || extractPhones_(getCell_(row, headerMap, "공식 연락채널")).join(" / ");
+  }
+
+  function getOfficialEmail_(row, headerMap) {
+    return getCell_(row, headerMap, "공식 이메일") || firstValue_(extractEmails_(getCell_(row, headerMap, "공식 연락채널")));
+  }
+
+  function getOfficialContactText_(row, headerMap) {
+    return [
+      getOfficialPhone_(row, headerMap),
+      getOfficialEmail_(row, headerMap),
+      getCell_(row, headerMap, "연락채널 메모"),
+      getCell_(row, headerMap, "공식 연락채널")
+    ].join(" ");
+  }
+
+  function extractPhones_(text) {
+    var matches = String(text || "").match(/(?:\+?\d{1,3}[-\s]?)?(?:0\d{1,2}|1\d{3}|080)[-\s]?\d{3,4}[-\s]?\d{4}/g) || [];
+    return uniqueValues_(matches.map(function (value) {
+      return String(value).replace(/\s+/g, "").trim();
+    }));
+  }
+
+  function extractEmails_(text) {
+    var matches = String(text || "").match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/ig) || [];
+    return uniqueValues_(matches.map(function (value) {
+      return String(value).trim();
+    }));
+  }
+
+  function extractContactMemo_(text) {
+    var memo = String(text || "");
+    extractEmails_(memo).forEach(function (email) {
+      memo = memo.replace(email, " ");
+    });
+    extractPhones_(memo).forEach(function (phone) {
+      var pattern = phone.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/-/g, "[-\\s]?");
+      memo = memo.replace(new RegExp(pattern, "g"), " ");
+    });
+    return memo.replace(/[\/|]+/g, " ").replace(/\s+/g, " ").trim();
+  }
+
+  function uniqueValues_(values) {
+    var seen = {};
+    var result = [];
+    values.forEach(function (value) {
+      var key = String(value || "").toLowerCase();
+      if (!key || seen[key]) return;
+      seen[key] = true;
+      result.push(value);
+    });
+    return result;
+  }
+
+  function firstValue_(values) {
+    return values && values.length ? values[0] : "";
   }
 
   function getHeaderMap_(headers) {

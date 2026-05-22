@@ -162,6 +162,9 @@ var LeadQualityRunner = (function () {
         getCell_(row, headerMap, "연락처"),
         getCell_(row, headerMap, "이메일"),
         getCell_(row, headerMap, "공식 연락채널"),
+        getCell_(row, headerMap, "공식 전화번호"),
+        getCell_(row, headerMap, "공식 이메일"),
+        getCell_(row, headerMap, "연락채널 메모"),
         getCell_(row, headerMap, "공개연락채널")
       ].join(" "),
       decisionSignal: getCell_(row, headerMap, "의사결정자 단서") || getCell_(row, headerMap, "담당자"),
@@ -187,6 +190,9 @@ var LeadQualityRunner = (function () {
         getCell_(row, headerMap, "연락처"),
         getCell_(row, headerMap, "이메일"),
         getCell_(row, headerMap, "공식 연락채널"),
+        getCell_(row, headerMap, "공식 전화번호"),
+        getCell_(row, headerMap, "공식 이메일"),
+        getCell_(row, headerMap, "연락채널 메모"),
         getCell_(row, headerMap, "공개연락채널")
       ].join(" "),
       phone: getCell_(row, headerMap, "연락처"),

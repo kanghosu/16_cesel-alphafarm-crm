@@ -62,7 +62,10 @@ for (const header of [
   "접촉단계",
   "고객DB승격근거",
   "고객DB승격가능",
-  "타깃리스트반영"
+  "타깃리스트반영",
+  "공식 전화번호",
+  "공식 이메일",
+  "연락채널 메모"
 ]) {
   assert.ok(webCsv.split(/\r?\n/)[0].includes(header), `${header} missing from web crawling template header`);
 }
