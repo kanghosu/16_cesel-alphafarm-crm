@@ -59,11 +59,9 @@ for (const header of [
 const webCsv = readText("templates/web_crawling_db_template.csv");
 for (const header of [
   "수집ID",
-  "수집채널",
-  "웹출처URL",
-  "검증상태",
+  "접촉단계",
+  "고객DB승격근거",
   "고객DB승격가능",
-  "승격차단사유",
   "타깃리스트반영"
 ]) {
   assert.ok(webCsv.split(/\r?\n/)[0].includes(header), `${header} missing from web crawling template header`);
@@ -72,6 +70,8 @@ for (const header of [
 const webDbCode = readText("src/WebLeadDb.gs");
 assert.ok(webDbCode.includes("12_웹크롤링DB"));
 assert.ok(webDbCode.includes("CustomerDbGate.evaluate"));
+assert.ok(webDbCode.includes("applyWebLeadDbView"));
+assert.ok(webDbCode.includes("SEOUL_GYEONGGI_DEMAND_ROWS"));
 
 const manifest = readJson("appsscript.json");
 assert.strictEqual(manifest.runtimeVersion, "V8");
@@ -81,5 +81,7 @@ assert.ok(manifest.oauthScopes.includes("https://www.googleapis.com/auth/gmail.r
 const readme = readText("README.md");
 assert.ok(readme.includes("12_웹크롤링DB"));
 assert.ok(readme.includes("검증완료 고객DB 반영"));
+assert.ok(readme.includes("접촉단계"));
+assert.ok(readme.includes("고객DB승격근거"));
 
 console.log("project_artifacts.test.js passed");

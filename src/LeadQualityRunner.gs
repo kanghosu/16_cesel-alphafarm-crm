@@ -11,7 +11,8 @@ var LeadQualityRunner = (function () {
     "A/B/C 등급"
   ];
   var VERIFICATION_HEADERS = [
-    "검증상태",
+    "접촉단계",
+    "고객DB승격근거",
     "고객DB승격가능",
     "승격차단사유",
     "승격사유"
@@ -63,12 +64,14 @@ var LeadQualityRunner = (function () {
         row: rowIndex + 1,
         result: result,
         gate: gate,
-        verificationStatus: getCell_(row, headerMap, "검증상태")
+        contactStage: getCell_(row, headerMap, "접촉단계"),
+        promotionEvidence: getCell_(row, headerMap, "고객DB승격근거")
       });
     }
 
     updates.forEach(function (item) {
-      if (!item.verificationStatus) writeByHeader_(sheet, item.row, "검증상태", "미검증");
+      if (!item.contactStage) writeByHeader_(sheet, item.row, "접촉단계", "미접촉");
+      if (!item.promotionEvidence) writeByHeader_(sheet, item.row, "고객DB승격근거", "없음");
       writeByHeader_(sheet, item.row, "거래준비도 점수", item.result.readinessScore);
       writeByHeader_(sheet, item.row, "점수 사유", item.result.scoreReason);
       writeByHeader_(sheet, item.row, "A/B/C 등급", item.result.grade);
@@ -177,7 +180,8 @@ var LeadQualityRunner = (function () {
   function rowToPromotionLead_(row, headerMap, grade) {
     return {
       grade: grade,
-      verificationStatus: getCell_(row, headerMap, "검증상태"),
+      contactStage: getCell_(row, headerMap, "접촉단계"),
+      promotionEvidence: getCell_(row, headerMap, "고객DB승격근거"),
       contactStatus: getCell_(row, headerMap, "접촉상태"),
       contactChannel: [
         getCell_(row, headerMap, "연락처"),

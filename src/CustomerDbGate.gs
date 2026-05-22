@@ -11,6 +11,15 @@ var CustomerDbGate = (function () {
     "담당자확인",
     "담당자 확인"
   ];
+  var VERIFIED_EVIDENCE = [
+    "회신",
+    "오프라인접점",
+    "오프라인 접점",
+    "연락처확보",
+    "연락처 확보",
+    "담당자확인",
+    "담당자 확인"
+  ];
 
   function evaluate(lead) {
     var normalized = normalizeLead_(lead || {});
@@ -18,12 +27,12 @@ var CustomerDbGate = (function () {
       return buildResult_("N", "A/B 등급만 고객DB 승격 대상입니다.");
     }
 
-    if (!isVerifiedStatus_(normalized.status)) {
-      return buildResult_("N", "웹 크롤링 후보는 회신, 오프라인 접점, 연락처 확보 전까지 고객DB로 승격하지 않습니다.");
+    if (!isVerifiedEvidence_(normalized.evidence) && !isVerifiedStatus_(normalized.status)) {
+      return buildResult_("N", "고객DB 승격근거를 회신, 오프라인접점, 연락처확보, 담당자확인 중 하나로 선택해야 합니다.");
     }
 
-    if (isContactOnlyStatus_(normalized.status) && !hasContactEvidence_(normalized)) {
-      return buildResult_("N", "연락처확보/담당자확인 상태는 연락처, 이메일, 담당자명 중 하나가 필요합니다.");
+    if ((isContactOnlyStatus_(normalized.status) || isContactOnlyStatus_(normalized.evidence)) && !hasContactEvidence_(normalized)) {
+      return buildResult_("N", "연락처확보/담당자확인 근거는 연락처, 이메일, 담당자명 중 하나가 필요합니다.");
     }
 
     return buildResult_("Y", "검증 상태가 확인되어 고객DB 승격 가능합니다.");
@@ -45,10 +54,19 @@ var CustomerDbGate = (function () {
       status: firstText_([
         lead.verificationStatus,
         lead["검증상태"],
+        lead.contactStage,
+        lead["접촉단계"],
         lead.contactStatus,
         lead["접촉상태"],
         lead.status,
         lead["상태"]
+      ]),
+      evidence: firstText_([
+        lead.promotionEvidence,
+        lead["고객DB승격근거"],
+        lead["승격근거"],
+        lead.verificationEvidence,
+        lead["검증근거"]
       ]),
       contactText: [
         lead.contactChannel,
@@ -87,6 +105,13 @@ var CustomerDbGate = (function () {
   function isVerifiedStatus_(status) {
     var normalized = normalizeText_(status);
     return VERIFIED_STATUSES.some(function (item) {
+      return normalized.indexOf(normalizeText_(item)) !== -1;
+    });
+  }
+
+  function isVerifiedEvidence_(evidence) {
+    var normalized = normalizeText_(evidence);
+    return VERIFIED_EVIDENCE.some(function (item) {
       return normalized.indexOf(normalizeText_(item)) !== -1;
     });
   }

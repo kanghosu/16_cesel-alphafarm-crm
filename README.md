@@ -61,7 +61,9 @@ clasp push
 ```text
 CESeL CRM > 초기 설정
 CESeL CRM > 웹크롤링DB 초기화
+CESeL CRM > 웹DB 시인성 개선
 CESeL CRM > 웹리드 점수화
+CESeL CRM > 서울경기 예상수요 넣기
 CESeL CRM > 선택 웹리드 타깃 반영
 CESeL CRM > 타깃리스트 점수화
 CESeL CRM > 검증완료 고객DB 반영
@@ -90,7 +92,12 @@ Grades:
 
 `12_웹크롤링DB` stores raw web, search, and research candidates. These rows can be scored and optionally copied to `08_타깃리스트`, but they are not real customers yet.
 
-`01_고객DB` is reserved for leads with reply, offline contact, received contact details, or confirmed 담당자 access. The `검증완료 고객DB 반영` menu checks this gate before appending rows.
+For readability, `12_웹크롤링DB` separates `접촉단계` from `고객DB승격근거`.
+
+- `접촉단계`: 미접촉, 온라인접수, 메일발송, 전화시도, 방문시도, 회신옴, 미팅예정, 미팅완료, 부적합
+- `고객DB승격근거`: 없음, 회신, 오프라인접점, 연락처확보, 담당자확인
+
+`01_고객DB` is reserved for leads with `고객DB승격근거` of reply, offline contact, received contact details, or confirmed 담당자 access. The `검증완료 고객DB 반영` menu checks this gate before appending rows.
 
 ## Test
 

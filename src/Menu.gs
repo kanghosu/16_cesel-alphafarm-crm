@@ -4,8 +4,9 @@ function onOpen() {
     .addItem("초기 설정", "setupLeadQualityCrm")
     .addSeparator()
     .addItem("웹크롤링DB 초기화", "setupWebLeadDb")
+    .addItem("웹DB 시인성 개선", "applyWebLeadDbView")
     .addItem("웹리드 점수화", "scoreWebLeadDb")
-    .addItem("리서치 후보 10개 넣기", "seedResearchBriefWebLeads")
+    .addItem("서울경기 예상수요 넣기", "seedSeoulGyeonggiDemandLeads")
     .addItem("선택 웹리드 타깃 반영", "promoteSelectedWebLeadsToTargetList")
     .addSeparator()
     .addItem("타깃리스트 점수화", "scoreTargetList")
@@ -36,6 +37,14 @@ function setupWebLeadDb() {
 
 function scoreWebLeadDb() {
   return WebLeadDb.scoreWebLeadDb();
+}
+
+function applyWebLeadDbView() {
+  return WebLeadDb.applyWebLeadDbView();
+}
+
+function seedSeoulGyeonggiDemandLeads() {
+  return WebLeadDb.seedSeoulGyeonggiDemandLeads();
 }
 
 function seedResearchBriefWebLeads() {

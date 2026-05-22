@@ -1,35 +1,37 @@
 var WebLeadDb = (function () {
   var WEB_SHEET = "12_웹크롤링DB";
   var TARGET_SHEET = "08_타깃리스트";
+
   var WEB_HEADERS = [
     "수집ID",
-    "수집일",
-    "수집채널",
-    "검색쿼리",
-    "제품군",
+    "접촉단계",
+    "고객DB승격근거",
+    "고객DB승격가능",
+    "타깃리스트반영",
+    "A/B/C 등급",
+    "거래준비도 점수",
+    "다음액션",
     "업체명",
-    "지역",
+    "제품군",
     "고객유형",
-    "웹출처URL",
-    "공개 출처",
-    "출처 신뢰도",
+    "지역",
     "공식 연락채널",
     "담당자",
+    "첫 접촉 포인트",
+    "추정 니즈",
     "시설/자산 단서",
     "예산/투자 단서",
     "의사결정자 단서",
-    "추정 니즈",
-    "첫 접촉 포인트",
-    "크롤링메모",
-    "거래준비도 점수",
+    "공개 출처",
+    "출처 신뢰도",
+    "웹출처URL",
+    "수집일",
+    "수집채널",
+    "검색쿼리",
     "제품군 확신도",
-    "A/B/C 등급",
     "점수 사유",
-    "검증상태",
-    "고객DB승격가능",
     "승격차단사유",
-    "타깃리스트반영",
-    "다음액션"
+    "크롤링메모"
   ];
 
   var TARGET_HEADERS = [
@@ -53,33 +55,36 @@ var WebLeadDb = (function () {
     "거래준비도 점수",
     "점수 사유",
     "A/B/C 등급",
-    "검증상태",
+    "접촉단계",
+    "고객DB승격근거",
     "고객DB승격가능",
     "승격차단사유",
     "승격사유"
   ];
 
-  var RESEARCH_SEED_ROWS = [
+  var SEOUL_GYEONGGI_DEMAND_ROWS = [
     {
+      gradeHint: "A",
       product: "AlphaCafe",
       company: "AK플라자 분당 / 상품본부",
       region: "성남 분당 서현",
       type: "백화점 상품본부·F&B",
-      contact: "1661-1114 / F&B팀 공개 채널",
-      source: "공식 홈페이지 / 조직현황",
+      contact: "1661-1114 / 공식 제안·고객지원 채널",
+      source: "공식 홈페이지 / 리서치 브리프",
       asset: "백화점, 상품본부, 푸드홀, F&B팀",
       budget: "시즌 디저트, 팝업, 신규 F&B 검토 가능성",
-      decision: "Food팀·F&B팀 공개",
+      decision: "F&B/푸드홀 담당 부서 연결 필요",
       needs: "푸드홀 신규 디저트, 여름철 딸기 수급, 팝업 검토",
       point: "분당권 푸드홀에서 프리미엄 딸기 디저트 제안"
     },
     {
+      gradeHint: "A",
       product: "Alpha Experience Portfolio",
       company: "현대백화점 판교점",
       region: "성남 판교",
       type: "백화점·프리미엄 리테일 공간",
-      contact: "1588-3650 / 고객상담실",
-      source: "공식 홈페이지 / 공식 블로그",
+      contact: "1588-3650 / 고객상담실 공식 채널",
+      source: "공식 홈페이지 / 공식 블로그 / 리서치 브리프",
       asset: "백화점, 라운지, 문화홀, 디저트 팝업 공간",
       budget: "팝업, 공간 차별화, 프리미엄 F&B 기획",
       decision: "고객상담실 경유 식품·공간 제휴 담당 연결 필요",
@@ -87,12 +92,13 @@ var WebLeadDb = (function () {
       point: "공간 차별화형 팝업/라이브 설치 제안"
     },
     {
+      gradeHint: "A",
       product: "Alpha Experience Portfolio",
       company: "GRAVITY JOSUN 서울 판교",
       region: "성남 판교",
       type: "호텔·라이프스타일 호텔",
-      contact: "031-539-4800 / reservation 공개",
-      source: "공식 홈페이지",
+      contact: "031-539-4800 / 공식 예약·문의 채널",
+      source: "공식 홈페이지 / 리서치 브리프",
       asset: "호텔, 레스토랑·바, 미팅 스페이스, 판교역 인접",
       budget: "프리미엄 호텔 공간 차별화 검토 가능성",
       decision: "세일즈 또는 식음 담당자 연결 필요",
@@ -100,12 +106,13 @@ var WebLeadDb = (function () {
       point: "판교 고객에게 보이는 라이브 설치형 딸기 경험 제안"
     },
     {
+      gradeHint: "A",
       product: "Alpha Experience Portfolio",
       company: "더블트리 바이 힐튼 서울 판교",
       region: "성남 판교",
       type: "호텔·MICE",
       contact: "공식 대표 채널 확인 필요",
-      source: "공식 홈페이지 / 호텔 정보",
+      source: "공식 홈페이지 / 리서치 브리프",
       asset: "호텔, 베이커리 카페, 루프톱 레스토랑, MICE 시설",
       budget: "기업행사·시즌 F&B 차별화 가능성",
       decision: "행사 또는 식음 관련 담당자 연결 필요",
@@ -113,12 +120,13 @@ var WebLeadDb = (function () {
       point: "공간 차별화와 프리미엄 딸기 경험 제안"
     },
     {
+      gradeHint: "A",
       product: "AlphaCafe",
       company: "코트야드 메리어트 서울 판교 MoMo Cafe",
       region: "성남 판교",
       type: "호텔 레스토랑·이벤트",
-      contact: "031-8060-2150 / 이벤트 이메일 공개",
-      source: "공식 홈페이지",
+      contact: "031-8060-2150 / 공식 이벤트 채널",
+      source: "공식 홈페이지 / 리서치 브리프",
       asset: "호텔 F&B, 뷔페/바, 이벤트 채널",
       budget: "호텔 디저트/브런치 시즌 파일럿 가능성",
       decision: "MoMo Cafe 또는 이벤트 담당 연결 필요",
@@ -126,51 +134,27 @@ var WebLeadDb = (function () {
       point: "베이커리·뷔페용 프리미엄 죽향 파일럿 검증"
     },
     {
-      product: "AlphaFarm Core",
-      company: "오아시스",
-      region: "성남 중원",
-      type: "친환경 신선식품 유통사",
-      contact: "1577-0098 / oasis@oasis.co.kr",
-      source: "공식 홈페이지 / 기업 정보",
-      asset: "성남본사, 법인, 신선식품 유통",
-      budget: "계약재배·직거래·프리미엄 신선식품 검토",
-      decision: "신선식품/제휴 담당 연결 필요",
-      needs: "안정공급, 브랜드 차별화, 프리미엄 딸기 SKU",
-      point: "실내 안정생산형 프리미엄 죽향 제안"
+      gradeHint: "A",
+      product: "Alpha Experience Portfolio",
+      company: "호텔 스카이파크 센트럴 서울 판교",
+      region: "성남 판교",
+      type: "호텔·연회",
+      contact: "031-5170-7750 / 공식 연회·예약 채널",
+      source: "공식 홈페이지 / 리서치 브리프",
+      asset: "호텔, 연회장, 판교 비즈니스 수요",
+      budget: "기업행사·세미나 공간 차별화 가능성",
+      decision: "연회 또는 세일즈 담당자 연결 필요",
+      needs: "연회장 앞 포토제닉 설치물, 기업행사 체험 요소",
+      point: "기업행사·세미나 공간에 적용 가능한 라이브 딸기 설치"
     },
     {
-      product: "40ft HC ContainerFarm",
-      company: "성남시농업기술센터",
-      region: "성남",
-      type: "농업기술센터·실증기관",
-      contact: "031-729-4326",
-      source: "공식 센터 안내",
-      asset: "공공 농업기관, 교육·실증 성격",
-      budget: "파일럿, 교육용, 도심형 실증",
-      decision: "도시농업·스마트농업 담당 연결 필요",
-      needs: "죽향 딸기 컨테이너형 파일럿 실증",
-      point: "스마트농업 실증 담당자 확인"
-    },
-    {
-      product: "40ft HC ContainerFarm",
-      company: "용인시농업기술센터",
-      region: "용인",
-      type: "농업기술센터·교육기관",
-      contact: "031-6193-1001 / 원예기술팀",
-      source: "용인시 공식 조직도",
-      asset: "스마트농업 테스트베드 교육장, 원예기술팀",
-      budget: "교육·시범사업·재배기술 검증형 파일럿",
-      decision: "원예기술팀 또는 스마트농업 담당 연결 필요",
-      needs: "저온·저습·공조형 테스트베드 검토",
-      point: "죽향 특화 테스트베드 검토"
-    },
-    {
+      gradeHint: "A",
       product: "AlphaCafe",
       company: "갤러리아 광교",
       region: "수원 광교",
       type: "프리미엄 백화점",
-      contact: "031-5174-6228 / 바이어 공개 채널",
-      source: "공식 홈페이지 / 백화점 정보",
+      contact: "031-5174-6228 / 공식 CS·바이어 연결 채널",
+      source: "공식 홈페이지 / 리서치 브리프",
       asset: "프리미엄 백화점, B1 DELI & DESSERT",
       budget: "프리미엄 딸기 판매, 디저트 협업, 라이브 쇼케이스",
       decision: "델리·농산 담당 바이어 연결 필요",
@@ -178,33 +162,213 @@ var WebLeadDb = (function () {
       point: "프리미엄 딸기 판매+디저트 협업"
     },
     {
+      gradeHint: "A",
+      product: "AlphaFarm Core",
+      company: "오아시스",
+      region: "성남 중원",
+      type: "친환경 신선식품 유통사",
+      contact: "1577-0098 / 공식 대표메일·입점상담 채널",
+      source: "공식 홈페이지 / 리서치 브리프",
+      asset: "성남본사, 법인, 신선식품 유통",
+      budget: "계약재배·직거래·프리미엄 신선식품 검토",
+      decision: "신선식품/제휴 담당 연결 필요",
+      needs: "안정공급, 브랜드 차별화, 프리미엄 딸기 SKU",
+      point: "실내 안정생산형 프리미엄 죽향 제안"
+    },
+    {
+      gradeHint: "A",
+      product: "40ft HC ContainerFarm",
+      company: "성남시농업기술센터",
+      region: "성남",
+      type: "농업기술센터·실증기관",
+      contact: "031-729-4326 / 공식 센터 채널",
+      source: "공식 센터 안내 / 리서치 브리프",
+      asset: "공공 농업기관, 교육·실증 성격",
+      budget: "파일럿, 교육용, 도심형 실증",
+      decision: "도시농업·스마트농업 담당 연결 필요",
+      needs: "죽향 딸기 컨테이너형 파일럿 실증",
+      point: "스마트농업 실증 담당자 확인"
+    },
+    {
+      gradeHint: "A",
+      product: "40ft HC ContainerFarm",
+      company: "용인시농업기술센터",
+      region: "용인",
+      type: "농업기술센터·교육기관",
+      contact: "031-6193-1001 / 원예기술팀 공식 채널",
+      source: "용인시 공식 조직도 / 리서치 브리프",
+      asset: "스마트농업 테스트베드 교육장, 원예기술팀",
+      budget: "교육·시범사업·재배기술 검증형 파일럿",
+      decision: "원예기술팀 또는 스마트농업 담당 연결 필요",
+      needs: "저온·저습·공조형 테스트베드 검토",
+      point: "죽향 특화 테스트베드 검토"
+    },
+    {
+      gradeHint: "B",
+      product: "40ft HC ContainerFarm",
+      company: "수원시농업기술센터",
+      region: "수원",
+      type: "농업기술센터·도시농업 교육기관",
+      contact: "031-228-2571 / 수원시 공식 채널",
+      source: "수원시 공식 보도자료 / 리서치 브리프",
+      asset: "도시농업·교육 프로그램, 공공 교육기관",
+      budget: "시민교육형 실증, 체험+기술검증 모델",
+      decision: "도시농업 담당자 연결 필요",
+      needs: "소형 파일럿 설치 후 교육·체험 연계",
+      point: "도시농업 교육형 스마트팜 파일럿 제안"
+    },
+    {
+      gradeHint: "B",
+      product: "40ft HC ContainerFarm",
+      company: "경기도농업기술원",
+      region: "화성·경기권",
+      type: "연구기관·실증기관",
+      contact: "031-8008-9325 / 미래농업팀 공식 채널",
+      source: "공식 조직·업무 안내 / 리서치 브리프",
+      asset: "스마트팜 기술 개발, 식물공장, 데이터 활용 연구",
+      budget: "죽향 품종 검증, 기술 검토, 공공 실증 파트너십",
+      decision: "미래농업팀 또는 연구 담당 연결 필요",
+      needs: "죽향 전용 환경제어·재배랙·운영기술 결합 검증",
+      point: "공공 실증·연구 협력 가능성 확인"
+    },
+    {
+      gradeHint: "B",
+      product: "40ft HC ContainerFarm",
+      company: "경기도농수산진흥원 스마트팜 지원센터",
+      region: "광주·경기권",
+      type: "스마트팜 교육·컨설팅 기관",
+      contact: "031-250-2700 / 공식 대표 채널",
+      source: "공식 스마트팜 지원센터 안내 / 리서치 브리프",
+      asset: "스마트팜 교육, 컨설팅, 시설농가 모니터링",
+      budget: "교육기관 대상 납품·실증, 장비 보강·파일럿 설치",
+      decision: "현장지원센터 담당 연결 필요",
+      needs: "기존 스마트팜 지원업무에 딸기 특화 실증 모델 추가",
+      point: "스마트팜 교육·컨설팅 연계 제안"
+    },
+    {
+      gradeHint: "B",
+      product: "AlphaCafe",
+      company: "아티제",
+      region: "서울 강남",
+      type: "프리미엄 디저트 카페 본사",
+      contact: "02-2155-5777 / VOC 공식 채널",
+      source: "공식 홈페이지 / 공식 인스타 / 리서치 브리프",
+      asset: "본사, 디저트·케이크 운영, 프리미엄 카페 브랜드",
+      budget: "여름 딸기 케이크 유지, 시즌 한정판",
+      decision: "상품/브랜드 담당 연결 필요",
+      needs: "여름철에도 딸기 SKU를 잃지 않는 공급/파일럿",
+      point: "프리미엄 딸기 공급 파일럿 제안"
+    },
+    {
+      gradeHint: "B",
+      product: "AlphaCafe",
+      company: "투썸플레이스",
+      region: "서울 중구",
+      type: "프리미엄 디저트 카페 본사",
+      contact: "1577-4410 / 공식 고객센터·기업 채널",
+      source: "공식 홈페이지 / 리서치 브리프",
+      asset: "본사, 프리미엄 디저트 카페, 딸기 케이크 대표 상품",
+      budget: "연중 프리미엄 딸기 케이크, 파일럿 점포 검증",
+      decision: "상품/신사업 또는 브랜드 담당 연결 필요",
+      needs: "여름철 딸기 수급 어려움 해결용 프리미엄 파일럿",
+      point: "대표 딸기 케이크 안정 수급 제안"
+    },
+    {
+      gradeHint: "B",
+      product: "AlphaCafe",
+      company: "조선 팰리스 / 조선델리 더 부티크",
+      region: "서울 강남",
+      type: "럭셔리 호텔 베이커리",
+      contact: "02-727-7650 / 기업연회 공식 채널",
+      source: "공식 델리·미팅 페이지 / 리서치 브리프",
+      asset: "럭셔리 호텔, 조선델리, 기업연회 채널",
+      budget: "고급 딸기 디저트 시즌 연장, VIP 수요 대응",
+      decision: "조선델리 또는 기업연회 담당 연결 필요",
+      needs: "고급 딸기 케이크를 여름까지 안정적으로 이어가는 제안",
+      point: "럭셔리 딸기 디저트 안정생산 제안"
+    },
+    {
+      gradeHint: "B",
       product: "AlphaFarm Core",
       company: "CJ프레시웨이",
       region: "서울 마포",
       type: "식자재 유통·푸드서비스 기업",
-      contact: "02-2149-6114 / cjfreshway@cj.net",
-      source: "공식 홈페이지",
+      contact: "02-2149-6114 / 공식 납품상담 채널",
+      source: "공식 홈페이지 / 리서치 브리프",
       asset: "본사, 식자재 유통, 전국 유통 인프라",
       budget: "신상품 납품 상담, 프리미엄 B2B 유통",
       decision: "식자재 구매/신상품 납품 담당 연결 필요",
       needs: "프리미엄 딸기 B2B 유통, 호텔/카페 고객사 연계",
       point: "죽향 안정생산 기반 프리미엄 식자재 제안"
+    },
+    {
+      gradeHint: "B",
+      product: "AlphaFarm Core",
+      company: "신세계푸드",
+      region: "서울 성동",
+      type: "종합식품·유통·베이커리 기업",
+      contact: "02-3397-6000 / 공식 구매상담 채널",
+      source: "공식 Contact Us / Biz Infra / 리서치 브리프",
+      asset: "본사, 조달·R&D·가공·보관·물류·영업 인프라",
+      budget: "프리미엄 딸기 원료·베이커리·급식·외식 채널 검토",
+      decision: "식자재 구매상담 또는 협력회사 담당 연결 필요",
+      needs: "죽향 딸기의 안정생산과 고부가 상품화 연결",
+      point: "고부가 딸기 상품화 제안"
+    },
+    {
+      gradeHint: "B",
+      product: "ASEAN Service",
+      company: "SPC삼립 / 파리바게뜨",
+      region: "경기 시흥·서울권",
+      type: "베이커리·글로벌 식품기업",
+      contact: "080-739-8572 / 공식 비즈니스 문의 채널",
+      source: "공식 홈페이지 / 리서치 브리프",
+      asset: "글로벌 베이커리 브랜드, 해외 사업 축",
+      budget: "ASEAN 검증, 현지 테스트베드, 저온·제습·안정수급",
+      decision: "글로벌/비즈니스 문의 담당 연결 필요",
+      needs: "동남아 베이커리용 딸기 공급 구조를 현지 검증부터 잡는 제안",
+      point: "ASEAN 현지 검증·사업화 서비스 제안"
+    },
+    {
+      gradeHint: "C",
+      product: "ASEAN Service",
+      company: "CJ푸드빌",
+      region: "서울 중구",
+      type: "외식·글로벌 프랜차이즈 기업",
+      contact: "1577-0700 / 공식 Contact Us",
+      source: "공식 Contact Us / International Franchising / 리서치 브리프",
+      asset: "외식·글로벌 프랜차이즈, 국가별 연락 채널",
+      budget: "ASEAN 진출 사전 검증, 베이커리·카페 채널 사업화",
+      decision: "글로벌/국제 프랜차이즈 담당 연결 필요",
+      needs: "싱가포르·말레이시아·인도네시아 진출 전 검증형 딸기 사업",
+      point: "동남아 진출 전 현지 실증·파트너 검증 제안"
     }
   ];
 
   function setupWebLeadDb() {
     var sheet = getOrCreateSheet_(CrmConfig.getSpreadsheet(), WEB_SHEET);
-    ensureHeaders_(sheet, WEB_HEADERS);
+    rebuildSheetByHeaderOrder_(sheet, WEB_HEADERS);
+    applyWebLeadDbView();
     return WEB_SHEET + " setup complete";
+  }
+
+  function applyWebLeadDbView() {
+    var sheet = getOrCreateSheet_(CrmConfig.getSpreadsheet(), WEB_SHEET);
+    rebuildSheetByHeaderOrder_(sheet, WEB_HEADERS);
+    applySheetFormat_(sheet);
+    return WEB_SHEET + " view improved";
   }
 
   function scoreWebLeadDb() {
     var ss = CrmConfig.getSpreadsheet();
     var sheet = getOrCreateSheet_(ss, WEB_SHEET);
-    ensureHeaders_(sheet, WEB_HEADERS);
+    rebuildSheetByHeaderOrder_(sheet, WEB_HEADERS);
 
     var values = sheet.getDataRange().getValues();
-    if (values.length < 2) return 0;
+    if (values.length < 2) {
+      applySheetFormat_(sheet);
+      return 0;
+    }
 
     var headerMap = getHeaderMap_(values[0]);
     var count = 0;
@@ -212,28 +376,35 @@ var WebLeadDb = (function () {
       var row = values[rowIndex];
       if (!getCell_(row, headerMap, "업체명")) continue;
 
-      var result = LeadQuality.scoreLead(rowToLead_(row, headerMap));
-      var gate = CustomerDbGate.evaluate(rowToPromotionLead_(row, headerMap, result.grade));
       var rowNumber = rowIndex + 1;
+      normalizeProcessFields_(sheet, rowNumber, row, headerMap);
 
-      if (!getCell_(row, headerMap, "검증상태")) writeByHeader_(sheet, rowNumber, "검증상태", "미검증");
+      var refreshedRow = sheet.getRange(rowNumber, 1, 1, sheet.getLastColumn()).getValues()[0];
+      var result = LeadQuality.scoreLead(rowToLead_(refreshedRow, headerMap));
+      var gate = CustomerDbGate.evaluate(rowToPromotionLead_(refreshedRow, headerMap, result.grade));
+
       writeByHeader_(sheet, rowNumber, "거래준비도 점수", result.readinessScore);
       writeByHeader_(sheet, rowNumber, "제품군 확신도", result.productConfidence);
       writeByHeader_(sheet, rowNumber, "A/B/C 등급", result.grade);
       writeByHeader_(sheet, rowNumber, "점수 사유", result.scoreReason);
       writeByHeader_(sheet, rowNumber, "고객DB승격가능", gate.allowed);
       writeByHeader_(sheet, rowNumber, "승격차단사유", gate.blockReason);
-      if (!getCell_(row, headerMap, "다음액션")) {
-        writeByHeader_(sheet, rowNumber, "다음액션", "공식 채널/담당자 확인 후 타깃리스트 반영 여부 결정");
+      if (!getCell_(refreshedRow, headerMap, "다음액션")) {
+        writeByHeader_(sheet, rowNumber, "다음액션", "공식 채널 확인 후 전화/메일 후보로 선별");
       }
       count += 1;
     }
+    applySheetFormat_(sheet);
     return count;
   }
 
   function seedResearchBriefWebLeads() {
-    var sheet = getOrCreateSheet_(CrmConfig.getSpreadsheet(), WEB_SHEET);
-    ensureHeaders_(sheet, WEB_HEADERS);
+    return seedSeoulGyeonggiDemandLeads();
+  }
+
+  function seedSeoulGyeonggiDemandLeads() {
+    setupWebLeadDb();
+    var sheet = CrmConfig.getSpreadsheet().getSheetByName(WEB_SHEET);
     var values = sheet.getDataRange().getValues();
     var headerMap = getHeaderMap_(values[0]);
     var existing = {};
@@ -243,31 +414,32 @@ var WebLeadDb = (function () {
     }
 
     var added = 0;
-    RESEARCH_SEED_ROWS.forEach(function (item) {
+    SEOUL_GYEONGGI_DEMAND_ROWS.forEach(function (item) {
       if (existing[normalizeKey_(item.company)]) return;
       var row = new Array(values[0].length).fill("");
       setCell_(row, headerMap, "수집ID", nextWebLeadId_(sheet));
-      setCell_(row, headerMap, "수집일", new Date());
-      setCell_(row, headerMap, "수집채널", "리서치브리프");
-      setCell_(row, headerMap, "검색쿼리", "deep-research-report (9)/(10)");
-      setCell_(row, headerMap, "제품군", item.product);
+      setCell_(row, headerMap, "접촉단계", "미접촉");
+      setCell_(row, headerMap, "고객DB승격근거", "없음");
+      setCell_(row, headerMap, "고객DB승격가능", "N");
+      setCell_(row, headerMap, "타깃리스트반영", item.gradeHint === "A" ? "Y" : "");
+      setCell_(row, headerMap, "A/B/C 등급", item.gradeHint);
+      setCell_(row, headerMap, "다음액션", item.gradeHint === "A" ? "오늘 전화/메일 1순위 후보" : "공식 채널 보강 후 접촉");
       setCell_(row, headerMap, "업체명", item.company);
-      setCell_(row, headerMap, "지역", item.region);
+      setCell_(row, headerMap, "제품군", item.product);
       setCell_(row, headerMap, "고객유형", item.type);
-      setCell_(row, headerMap, "공개 출처", item.source);
-      setCell_(row, headerMap, "출처 신뢰도", "공식/리서치 확인");
+      setCell_(row, headerMap, "지역", item.region);
       setCell_(row, headerMap, "공식 연락채널", item.contact);
+      setCell_(row, headerMap, "첫 접촉 포인트", item.point);
+      setCell_(row, headerMap, "추정 니즈", item.needs);
       setCell_(row, headerMap, "시설/자산 단서", item.asset);
       setCell_(row, headerMap, "예산/투자 단서", item.budget);
       setCell_(row, headerMap, "의사결정자 단서", item.decision);
-      setCell_(row, headerMap, "추정 니즈", item.needs);
-      setCell_(row, headerMap, "첫 접촉 포인트", item.point);
-      setCell_(row, headerMap, "크롤링메모", "첨부 리서치 브리프 기반 후보. 고객DB 직접 입력 금지.");
-      setCell_(row, headerMap, "검증상태", "미검증");
-      setCell_(row, headerMap, "고객DB승격가능", "N");
-      setCell_(row, headerMap, "승격차단사유", "웹/리서치 후보는 회신, 오프라인 접점, 연락처 확보 전까지 고객DB 승격 금지");
-      setCell_(row, headerMap, "타깃리스트반영", "");
-      setCell_(row, headerMap, "다음액션", "공식 채널 확인 후 전화/메일 후보로 선별");
+      setCell_(row, headerMap, "공개 출처", item.source);
+      setCell_(row, headerMap, "출처 신뢰도", "공식/리서치 확인");
+      setCell_(row, headerMap, "수집일", new Date());
+      setCell_(row, headerMap, "수집채널", "서울경기수요리서치");
+      setCell_(row, headerMap, "검색쿼리", "deep-research-report (7)/(8)");
+      setCell_(row, headerMap, "크롤링메모", "서울·경기권 예상 수요 후보. 회신/오프라인/연락처 확보 전 고객DB 직접 입력 금지.");
       sheet.appendRow(row);
       existing[normalizeKey_(item.company)] = true;
       added += 1;
@@ -318,7 +490,7 @@ var WebLeadDb = (function () {
         getCell_(webRow, webMap, "웹출처URL")
       ].join(" ").trim());
       setCell_(row, targetMap, "우선순위", getCell_(webRow, webMap, "A/B/C 등급"));
-      setCell_(row, targetMap, "접촉상태", "미접촉");
+      setCell_(row, targetMap, "접촉상태", getCell_(webRow, webMap, "접촉단계") || "미접촉");
       setCell_(row, targetMap, "메모", [
         getCell_(webRow, webMap, "첫 접촉 포인트"),
         getCell_(webRow, webMap, "크롤링메모")
@@ -329,7 +501,8 @@ var WebLeadDb = (function () {
       setCell_(row, targetMap, "거래준비도 점수", getCell_(webRow, webMap, "거래준비도 점수"));
       setCell_(row, targetMap, "점수 사유", getCell_(webRow, webMap, "점수 사유"));
       setCell_(row, targetMap, "A/B/C 등급", getCell_(webRow, webMap, "A/B/C 등급"));
-      setCell_(row, targetMap, "검증상태", getCell_(webRow, webMap, "검증상태") || "미검증");
+      setCell_(row, targetMap, "접촉단계", getCell_(webRow, webMap, "접촉단계") || "미접촉");
+      setCell_(row, targetMap, "고객DB승격근거", getCell_(webRow, webMap, "고객DB승격근거") || "없음");
       setCell_(row, targetMap, "고객DB승격가능", getCell_(webRow, webMap, "고객DB승격가능"));
       setCell_(row, targetMap, "승격차단사유", getCell_(webRow, webMap, "승격차단사유"));
       target.appendRow(row);
@@ -337,6 +510,28 @@ var WebLeadDb = (function () {
       moved += 1;
     }
     return moved;
+  }
+
+  function normalizeProcessFields_(sheet, rowNumber, row, headerMap) {
+    var contactStage = getCell_(row, headerMap, "접촉단계");
+    var evidence = getCell_(row, headerMap, "고객DB승격근거");
+    var legacyStatus = getCell_(row, headerMap, "검증상태");
+    if (!contactStage) {
+      if (legacyStatus === "회신옴") contactStage = "회신옴";
+      else if (legacyStatus === "오프라인접점") contactStage = "미팅완료";
+      else if (legacyStatus === "부적합") contactStage = "부적합";
+      else contactStage = "미접촉";
+      writeByHeader_(sheet, rowNumber, "접촉단계", contactStage);
+    }
+    if (!evidence) {
+      if (legacyStatus === "회신옴") evidence = "회신";
+      else if (legacyStatus === "오프라인접점") evidence = "오프라인접점";
+      else if (legacyStatus === "연락처확보") evidence = "연락처확보";
+      else if (legacyStatus === "담당자확인") evidence = "담당자확인";
+      else evidence = "없음";
+      writeByHeader_(sheet, rowNumber, "고객DB승격근거", evidence);
+    }
+    if (!getCell_(row, headerMap, "타깃리스트반영")) writeByHeader_(sheet, rowNumber, "타깃리스트반영", "");
   }
 
   function rowToLead_(row, headerMap) {
@@ -365,16 +560,47 @@ var WebLeadDb = (function () {
   function rowToPromotionLead_(row, headerMap, grade) {
     return {
       grade: grade,
-      verificationStatus: getCell_(row, headerMap, "검증상태"),
+      contactStage: getCell_(row, headerMap, "접촉단계"),
+      promotionEvidence: getCell_(row, headerMap, "고객DB승격근거"),
       contactChannel: getCell_(row, headerMap, "공식 연락채널"),
       contactName: getCell_(row, headerMap, "담당자"),
-      promotionReason: getCell_(row, headerMap, "승격사유"),
       notes: getCell_(row, headerMap, "크롤링메모")
     };
   }
 
   function getOrCreateSheet_(ss, name) {
     return ss.getSheetByName(name) || ss.insertSheet(name);
+  }
+
+  function rebuildSheetByHeaderOrder_(sheet, preferredHeaders) {
+    if (sheet.getFilter()) sheet.getFilter().remove();
+    sheet.showColumns(1, sheet.getMaxColumns());
+    var lastColumn = Math.max(sheet.getLastColumn(), 1);
+    var lastRow = Math.max(sheet.getLastRow(), 1);
+    var values = sheet.getRange(1, 1, lastRow, lastColumn).getValues();
+    var oldHeaders = values[0].filter(String);
+    var oldMap = getHeaderMap_(oldHeaders);
+    var orderedHeaders = preferredHeaders.slice();
+    oldHeaders.forEach(function (header) {
+      if (orderedHeaders.indexOf(header) === -1) orderedHeaders.push(header);
+    });
+
+    var rebuilt = [orderedHeaders];
+    for (var i = 1; i < values.length; i += 1) {
+      var oldRow = values[i];
+      var newRow = orderedHeaders.map(function (header) {
+        var index = oldMap[header];
+        return index === undefined ? "" : oldRow[index];
+      });
+      rebuilt.push(newRow);
+    }
+
+    sheet.clear();
+    if (sheet.getMaxColumns() < orderedHeaders.length) {
+      sheet.insertColumnsAfter(sheet.getMaxColumns(), orderedHeaders.length - sheet.getMaxColumns());
+    }
+    sheet.getRange(1, 1, rebuilt.length, orderedHeaders.length).setValues(rebuilt);
+    sheet.setFrozenRows(1);
   }
 
   function ensureHeaders_(sheet, headers) {
@@ -393,6 +619,123 @@ var WebLeadDb = (function () {
       sheet.getRange(1, 1, 1, existing.length).setValues([existing]);
       sheet.setFrozenRows(1);
     }
+  }
+
+  function applySheetFormat_(sheet) {
+    var lastRow = Math.max(sheet.getLastRow(), 1);
+    var lastColumn = Math.max(sheet.getLastColumn(), WEB_HEADERS.length);
+    var headerMap = getHeaderMap_(sheet.getRange(1, 1, 1, lastColumn).getValues()[0]);
+
+    sheet.setFrozenRows(1);
+    sheet.setFrozenColumns(8);
+    sheet.getRange(1, 1, lastRow, lastColumn)
+      .setFontFamily("Arial")
+      .setFontSize(10)
+      .setVerticalAlignment("middle")
+      .setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP);
+    sheet.getRange(1, 1, 1, lastColumn)
+      .setBackground("#0f5b78")
+      .setFontColor("#ffffff")
+      .setFontWeight("bold")
+      .setHorizontalAlignment("center");
+    sheet.setRowHeight(1, 34);
+    if (lastRow > 1) sheet.setRowHeights(2, lastRow - 1, 38);
+
+    setWidths_(sheet, headerMap, {
+      "수집ID": 82,
+      "접촉단계": 110,
+      "고객DB승격근거": 130,
+      "고객DB승격가능": 110,
+      "타깃리스트반영": 110,
+      "A/B/C 등급": 90,
+      "거래준비도 점수": 100,
+      "다음액션": 210,
+      "업체명": 210,
+      "제품군": 160,
+      "고객유형": 180,
+      "지역": 120,
+      "공식 연락채널": 220,
+      "첫 접촉 포인트": 260,
+      "추정 니즈": 260,
+      "시설/자산 단서": 240,
+      "예산/투자 단서": 240,
+      "의사결정자 단서": 220,
+      "점수 사유": 360,
+      "승격차단사유": 280,
+      "크롤링메모": 280
+    });
+
+    ["다음액션", "첫 접촉 포인트", "추정 니즈", "시설/자산 단서", "예산/투자 단서", "의사결정자 단서", "점수 사유", "승격차단사유", "크롤링메모"].forEach(function (header) {
+      var col = headerMap[header];
+      if (col !== undefined) sheet.getRange(2, col + 1, Math.max(sheet.getMaxRows() - 1, 1), 1).setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP);
+    });
+
+    applyValidation_(sheet, headerMap, "접촉단계", ["미접촉", "온라인접수", "메일발송", "전화시도", "방문시도", "회신옴", "미팅예정", "미팅완료", "부적합"]);
+    applyValidation_(sheet, headerMap, "고객DB승격근거", ["없음", "회신", "오프라인접점", "연락처확보", "담당자확인"]);
+    applyValidation_(sheet, headerMap, "타깃리스트반영", ["Y", "N", ""]);
+    applyValidation_(sheet, headerMap, "A/B/C 등급", ["A", "B", "C", "보류"]);
+    applyValidation_(sheet, headerMap, "제품군", ["AlphaCafe", "Alpha Experience Portfolio", "AlphaFarm Core", "40ft HC ContainerFarm", "ASEAN Service", "확인 필요"]);
+
+    if (sheet.getFilter()) sheet.getFilter().remove();
+    sheet.getRange(1, 1, lastRow, lastColumn).createFilter();
+    applyConditionalFormats_(sheet, headerMap, lastRow);
+    hideLegacyColumns_(sheet, headerMap);
+  }
+
+  function setWidths_(sheet, headerMap, widths) {
+    Object.keys(widths).forEach(function (header) {
+      if (headerMap[header] !== undefined) sheet.setColumnWidth(headerMap[header] + 1, widths[header]);
+    });
+  }
+
+  function applyValidation_(sheet, headerMap, header, values) {
+    var col = headerMap[header];
+    if (col === undefined) return;
+    var rule = SpreadsheetApp.newDataValidation().requireValueInList(values, true).setAllowInvalid(false).build();
+    sheet.getRange(2, col + 1, Math.max(sheet.getMaxRows() - 1, 1), 1).setDataValidation(rule);
+  }
+
+  function applyConditionalFormats_(sheet, headerMap, lastRow) {
+    var rules = [];
+    function textRule(header, value, background, fontColor) {
+      var col = headerMap[header];
+      if (col === undefined) return;
+      rules.push(SpreadsheetApp.newConditionalFormatRule()
+        .whenTextEqualTo(value)
+        .setBackground(background)
+        .setFontColor(fontColor || "#111111")
+        .setRanges([sheet.getRange(2, col + 1, Math.max(lastRow - 1, 1), 1)])
+        .build());
+    }
+    textRule("접촉단계", "미접촉", "#f1f5f9");
+    textRule("접촉단계", "온라인접수", "#dbeafe");
+    textRule("접촉단계", "메일발송", "#e0e7ff");
+    textRule("접촉단계", "전화시도", "#fef3c7");
+    textRule("접촉단계", "방문시도", "#ffedd5");
+    textRule("접촉단계", "회신옴", "#dcfce7");
+    textRule("접촉단계", "미팅예정", "#ccfbf1");
+    textRule("접촉단계", "미팅완료", "#bbf7d0");
+    textRule("접촉단계", "부적합", "#fee2e2");
+    textRule("고객DB승격근거", "없음", "#f8fafc");
+    textRule("고객DB승격근거", "회신", "#dcfce7");
+    textRule("고객DB승격근거", "오프라인접점", "#bbf7d0");
+    textRule("고객DB승격근거", "연락처확보", "#dbeafe");
+    textRule("고객DB승격근거", "담당자확인", "#ccfbf1");
+    textRule("고객DB승격가능", "Y", "#22c55e", "#ffffff");
+    textRule("고객DB승격가능", "N", "#f1f5f9");
+    textRule("타깃리스트반영", "Y", "#2563eb", "#ffffff");
+    textRule("A/B/C 등급", "A", "#16a34a", "#ffffff");
+    textRule("A/B/C 등급", "B", "#0ea5e9", "#ffffff");
+    textRule("A/B/C 등급", "C", "#facc15");
+    textRule("A/B/C 등급", "보류", "#fecaca");
+    sheet.setConditionalFormatRules(rules);
+  }
+
+  function hideLegacyColumns_(sheet, headerMap) {
+    ["검증상태"].forEach(function (header) {
+      var col = headerMap[header];
+      if (col !== undefined) sheet.hideColumns(col + 1);
+    });
   }
 
   function getHeaderMap_(headers) {
@@ -442,8 +785,10 @@ var WebLeadDb = (function () {
 
   return {
     setupWebLeadDb: setupWebLeadDb,
+    applyWebLeadDbView: applyWebLeadDbView,
     scoreWebLeadDb: scoreWebLeadDb,
     seedResearchBriefWebLeads: seedResearchBriefWebLeads,
+    seedSeoulGyeonggiDemandLeads: seedSeoulGyeonggiDemandLeads,
     promoteSelectedWebLeadsToTargetList: promoteSelectedWebLeadsToTargetList
   };
 })();

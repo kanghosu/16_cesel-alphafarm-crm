@@ -58,10 +58,21 @@ assert.match(contactWithoutChannel.reason, /연락처|담당자/);
 const contactReceivedLead = evaluate({
   companyName: "연락처 받은 후보",
   grade: "B",
-  verificationStatus: "연락처확보",
+  contactStage: "전화시도",
+  promotionEvidence: "연락처확보",
   phone: "010-1234-5678"
 });
 assert.strictEqual(contactReceivedLead.allowed, "Y");
+
+const mailedButNoEvidence = evaluate({
+  companyName: "메일만 보낸 후보",
+  grade: "A",
+  contactStage: "메일발송",
+  promotionEvidence: "없음",
+  email: "sent@example.com"
+});
+assert.strictEqual(mailedButNoEvidence.allowed, "N");
+assert.match(mailedButNoEvidence.reason, /승격근거/);
 
 const lowGradeReply = evaluate({
   companyName: "회신은 왔지만 낮은 후보",
