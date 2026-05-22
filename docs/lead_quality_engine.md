@@ -10,7 +10,9 @@ The lead quality engine ranks candidates by revenue or investment readiness. It 
 2. Fill official source, contact channel, asset/facility signal, budget/investment signal, decision-maker signal, and notes.
 3. Run `CESeL CRM > 타깃리스트 점수화`.
 4. Review `거래준비도 점수`, `점수 사유`, `A/B/C 등급`, and `탈락질문 결과`.
-5. Run `CESeL CRM > A/B급 고객DB 반영` to promote only A/B-grade targets to `01_고객DB`.
+5. Run `CESeL CRM > 검증완료 고객DB 반영` to promote only A/B-grade targets with reply, offline contact, received contact details, or confirmed 담당자 access to `01_고객DB`.
+
+Web/search/research candidates should live first in `12_웹크롤링DB`. They can be scored and copied into `08_타깃리스트`, but they are not promoted to `01_고객DB` until the customer DB gate passes.
 
 ## Automatic Holds
 

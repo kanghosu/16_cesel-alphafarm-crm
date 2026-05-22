@@ -22,7 +22,11 @@ const requiredFields = [
   "score_reason",
   "lead_grade",
   "product_confidence",
-  "disqualification_reason"
+  "disqualification_reason",
+  "source_type",
+  "verification_status",
+  "customer_db_eligible",
+  "customer_db_block_reason"
 ];
 
 for (const field of requiredFields) {
@@ -52,9 +56,30 @@ for (const header of [
   assert.ok(csv.split(/\r?\n/)[0].includes(header), `${header} missing from template header`);
 }
 
+const webCsv = readText("templates/web_crawling_db_template.csv");
+for (const header of [
+  "수집ID",
+  "수집채널",
+  "웹출처URL",
+  "검증상태",
+  "고객DB승격가능",
+  "승격차단사유",
+  "타깃리스트반영"
+]) {
+  assert.ok(webCsv.split(/\r?\n/)[0].includes(header), `${header} missing from web crawling template header`);
+}
+
+const webDbCode = readText("src/WebLeadDb.gs");
+assert.ok(webDbCode.includes("12_웹크롤링DB"));
+assert.ok(webDbCode.includes("CustomerDbGate.evaluate"));
+
 const manifest = readJson("appsscript.json");
 assert.strictEqual(manifest.runtimeVersion, "V8");
 assert.ok(manifest.oauthScopes.includes("https://www.googleapis.com/auth/spreadsheets.currentonly"));
 assert.ok(manifest.oauthScopes.includes("https://www.googleapis.com/auth/gmail.readonly"));
+
+const readme = readText("README.md");
+assert.ok(readme.includes("12_웹크롤링DB"));
+assert.ok(readme.includes("검증완료 고객DB 반영"));
 
 console.log("project_artifacts.test.js passed");

@@ -40,7 +40,9 @@ After pushing:
 2. Run `CESeL CRM > 초기 설정`.
 3. Authorize the script.
 4. Run `CESeL CRM > 타깃리스트 점수화`.
-5. Run `CESeL CRM > A/B급 고객DB 반영`.
+5. Run `CESeL CRM > 검증완료 고객DB 반영`.
+
+For web crawling or research candidates, first run `CESeL CRM > 웹크롤링DB 초기화` and keep them in `12_웹크롤링DB`. The real `01_고객DB` should only contain candidates with reply, offline contact, received contact details, or confirmed 담당자 access.
 
 ## Access Note
 

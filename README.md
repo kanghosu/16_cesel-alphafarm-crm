@@ -5,20 +5,24 @@ Google Apps Script based CRM automation for CESeL / AlphaFarm lead scoring, targ
 ## What This Adds
 
 - `08_타깃리스트` lead quality scoring with `거래준비도 점수`
+- `12_웹크롤링DB` for web/research leads that must not enter the real customer DB directly
 - Product-specific disqualification questions for 40ft HC, AlphaFarm Core, AlphaCafe, Experience, and ASEAN
-- A/B-grade promotion from `08_타깃리스트` into `01_고객DB`
+- Verified-only promotion from `08_타깃리스트` into `01_고객DB`
 - Representative approval flags for price, ROI, payback, production volume, external documents, and proposal requests
 - Gmail reply tracking by customer ID or subject token, without automatic email sending
 
 ## Local Files
 
 - `src/LeadQuality.gs`: core scoring rules
+- `src/CustomerDbGate.gs`: verified-only customer DB promotion gate
 - `src/LeadQualityRunner.gs`: Google Sheets integration
+- `src/WebLeadDb.gs`: separate web crawling/research lead DB
 - `src/Menu.gs`: `CESeL CRM` menu
 - `src/GmailTracker.gs`: Gmail reply tracking
 - `src/Triggers.gs`: hourly reply tracking trigger
 - `schemas/lead_output_schema.json`: OpenAI Structured Outputs schema
 - `templates/lead_sourcing_template.csv`: semi-manual lead sourcing template
+- `templates/web_crawling_db_template.csv`: web/research lead DB template
 - `tests/sample_leads.json`: fixed test examples for A/B/C/hold behavior
 
 ## Apps Script Setup
@@ -56,8 +60,11 @@ clasp push
 
 ```text
 CESeL CRM > 초기 설정
+CESeL CRM > 웹크롤링DB 초기화
+CESeL CRM > 웹리드 점수화
+CESeL CRM > 선택 웹리드 타깃 반영
 CESeL CRM > 타깃리스트 점수화
-CESeL CRM > A/B급 고객DB 반영
+CESeL CRM > 검증완료 고객DB 반영
 ```
 
 ## Lead Quality Rules
@@ -79,13 +86,19 @@ Grades:
 - `C`: keep as low-priority prospect
 - `보류`: do not promote until risk or missing qualification is resolved
 
+## DB Separation Rule
+
+`12_웹크롤링DB` stores raw web, search, and research candidates. These rows can be scored and optionally copied to `08_타깃리스트`, but they are not real customers yet.
+
+`01_고객DB` is reserved for leads with reply, offline contact, received contact details, or confirmed 담당자 access. The `검증완료 고객DB 반영` menu checks this gate before appending rows.
+
 ## Test
 
 ```bash
 npm test
 ```
 
-The tests cover ten sample leads, Core/40ft asset gates, approval-required keywords, unofficial contact holds, and artifact/schema completeness.
+The tests cover ten sample leads, Core/40ft asset gates, approval-required keywords, unofficial contact holds, customer DB promotion gates, and artifact/schema completeness.
 
 See `docs/target_google_sheet.md` for the sheet-specific deployment notes.
 

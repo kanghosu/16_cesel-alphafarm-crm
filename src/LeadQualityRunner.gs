@@ -10,6 +10,12 @@ var LeadQualityRunner = (function () {
     "점수 사유",
     "A/B/C 등급"
   ];
+  var VERIFICATION_HEADERS = [
+    "검증상태",
+    "고객DB승격가능",
+    "승격차단사유",
+    "승격사유"
+  ];
   var CUSTOMER_QUALITY_HEADERS = [
     "거래준비도 점수",
     "제품군 확신도",
@@ -25,7 +31,7 @@ var LeadQualityRunner = (function () {
     ensureHeaders_(target, [
       "타깃ID", "업체명", "고객유형", "지역", "우선제품", "담당자", "연락처", "이메일",
       "출처", "우선순위", "접촉예정일", "접촉상태", "메모"
-    ].concat(QUALITY_HEADERS));
+    ].concat(QUALITY_HEADERS).concat(VERIFICATION_HEADERS));
 
     ensureHeaders_(customer, [
       "고객ID", "등록일", "업체명", "법인/브랜드명", "고객유형", "지역", "제품군",
@@ -41,7 +47,7 @@ var LeadQualityRunner = (function () {
   function scoreTargetList() {
     var sheet = CrmConfig.getSpreadsheet().getSheetByName(TARGET_SHEET);
     if (!sheet) throw new Error(TARGET_SHEET + " sheet not found");
-    ensureHeaders_(sheet, QUALITY_HEADERS);
+    ensureHeaders_(sheet, QUALITY_HEADERS.concat(VERIFICATION_HEADERS));
 
     var values = sheet.getDataRange().getValues();
     if (values.length < 2) return 0;
@@ -52,17 +58,23 @@ var LeadQualityRunner = (function () {
       var row = values[rowIndex];
       if (!row[headerMap["업체명"]]) continue;
       var result = LeadQuality.scoreLead(rowToLead_(row, headerMap));
+      var gate = CustomerDbGate.evaluate(rowToPromotionLead_(row, headerMap, result.grade));
       updates.push({
         row: rowIndex + 1,
-        result: result
+        result: result,
+        gate: gate,
+        verificationStatus: getCell_(row, headerMap, "검증상태")
       });
     }
 
     updates.forEach(function (item) {
+      if (!item.verificationStatus) writeByHeader_(sheet, item.row, "검증상태", "미검증");
       writeByHeader_(sheet, item.row, "거래준비도 점수", item.result.readinessScore);
       writeByHeader_(sheet, item.row, "점수 사유", item.result.scoreReason);
       writeByHeader_(sheet, item.row, "A/B/C 등급", item.result.grade);
       writeByHeader_(sheet, item.row, "탈락질문 결과", item.result.disqualificationResult);
+      writeByHeader_(sheet, item.row, "고객DB승격가능", item.gate.allowed);
+      writeByHeader_(sheet, item.row, "승격차단사유", item.gate.blockReason);
     });
 
     return updates.length;
@@ -77,6 +89,9 @@ var LeadQualityRunner = (function () {
     var targetValues = target.getDataRange().getValues();
     if (targetValues.length < 2) return 0;
 
+    ensureHeaders_(target, VERIFICATION_HEADERS);
+    ensureHeaders_(customer, CUSTOMER_QUALITY_HEADERS);
+
     var targetMap = getHeaderMap_(targetValues[0]);
     var customerValues = customer.getDataRange().getValues();
     var customerMap = getHeaderMap_(customerValues[0]);
@@ -90,13 +105,20 @@ var LeadQualityRunner = (function () {
     for (var rowIndex = 1; rowIndex < targetValues.length; rowIndex += 1) {
       var targetRow = targetValues[rowIndex];
       var companyName = getCell_(targetRow, targetMap, "업체명");
-      var grade = getCell_(targetRow, targetMap, "A/B/C 등급");
-      if (!companyName || existingNames[normalizeKey_(companyName)] || (grade !== "A" && grade !== "B")) {
+      if (!companyName || existingNames[normalizeKey_(companyName)]) {
         continue;
       }
 
       var lead = rowToLead_(targetRow, targetMap);
       var result = LeadQuality.scoreLead(lead);
+      var grade = getCell_(targetRow, targetMap, "A/B/C 등급") || result.grade;
+      var gate = CustomerDbGate.evaluate(rowToPromotionLead_(targetRow, targetMap, grade));
+      writeByHeader_(target, rowIndex + 1, "고객DB승격가능", gate.allowed);
+      writeByHeader_(target, rowIndex + 1, "승격차단사유", gate.blockReason);
+      if (gate.allowed !== "Y") {
+        continue;
+      }
+
       var row = new Array(customerValues[0].length).fill("");
       setCell_(row, customerMap, "고객ID", nextCustomerId_(customer));
       setCell_(row, customerMap, "등록일", new Date());
@@ -110,9 +132,9 @@ var LeadQualityRunner = (function () {
       setCell_(row, customerMap, "접촉경로", getCell_(targetRow, targetMap, "출처"));
       setCell_(row, customerMap, "관심가능성", grade);
       setCell_(row, customerMap, "돈될가능성", result.grade);
-      setCell_(row, customerMap, "상태", "미접촉");
+      setCell_(row, customerMap, "상태", "검증완료");
       setCell_(row, customerMap, "대표컨펌필요", result.approvalRequired === "Y" ? "필요" : "불필요");
-      setCell_(row, customerMap, "다음액션", "1차 전화/메일로 니즈 확인");
+      setCell_(row, customerMap, "다음액션", "검증 완료 리드 후속 상담");
       setCell_(row, customerMap, "리스크요약", result.holdReason);
       setCell_(row, customerMap, "비고", getCell_(targetRow, targetMap, "메모"));
       setCell_(row, customerMap, "거래준비도 점수", result.readinessScore);
@@ -136,15 +158,41 @@ var LeadQualityRunner = (function () {
       contactChannel: [
         getCell_(row, headerMap, "연락처"),
         getCell_(row, headerMap, "이메일"),
-        getCell_(row, headerMap, "공식 연락채널")
+        getCell_(row, headerMap, "공식 연락채널"),
+        getCell_(row, headerMap, "공개연락채널")
       ].join(" "),
       decisionSignal: getCell_(row, headerMap, "의사결정자 단서") || getCell_(row, headerMap, "담당자"),
       assetSignal: getCell_(row, headerMap, "시설/자산 단서"),
       budgetSignal: getCell_(row, headerMap, "예산/투자 단서"),
-      urgentNeed: getCell_(row, headerMap, "메모"),
+      urgentNeed: getCell_(row, headerMap, "추정 니즈") || getCell_(row, headerMap, "메모"),
       notes: [
         getCell_(row, headerMap, "메모"),
-        getCell_(row, headerMap, "탈락질문 결과")
+        getCell_(row, headerMap, "탈락질문 결과"),
+        getCell_(row, headerMap, "첫 접촉 포인트"),
+        getCell_(row, headerMap, "크롤링메모")
+      ].join(" ")
+    };
+  }
+
+  function rowToPromotionLead_(row, headerMap, grade) {
+    return {
+      grade: grade,
+      verificationStatus: getCell_(row, headerMap, "검증상태"),
+      contactStatus: getCell_(row, headerMap, "접촉상태"),
+      contactChannel: [
+        getCell_(row, headerMap, "연락처"),
+        getCell_(row, headerMap, "이메일"),
+        getCell_(row, headerMap, "공식 연락채널"),
+        getCell_(row, headerMap, "공개연락채널")
+      ].join(" "),
+      phone: getCell_(row, headerMap, "연락처"),
+      email: getCell_(row, headerMap, "이메일"),
+      contactName: getCell_(row, headerMap, "담당자"),
+      promotionReason: getCell_(row, headerMap, "승격사유"),
+      notes: [
+        getCell_(row, headerMap, "메모"),
+        getCell_(row, headerMap, "출처"),
+        getCell_(row, headerMap, "크롤링메모")
       ].join(" ")
     };
   }

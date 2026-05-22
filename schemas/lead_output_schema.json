@@ -31,7 +31,11 @@
     "score_reason",
     "lead_grade",
     "product_confidence",
-    "disqualification_reason"
+    "disqualification_reason",
+    "source_type",
+    "verification_status",
+    "customer_db_eligible",
+    "customer_db_block_reason"
   ],
   "properties": {
     "company_name": { "type": "string" },
@@ -92,6 +96,19 @@
       "type": "string",
       "enum": ["높음", "중간", "낮음"]
     },
-    "disqualification_reason": { "type": "string" }
+    "disqualification_reason": { "type": "string" },
+    "source_type": {
+      "type": "string",
+      "enum": ["입력함", "웹크롤링", "리서치", "소개", "오프라인", "Gmail", "확인 필요"]
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": ["미검증", "검증중", "연락처확보", "회신옴", "오프라인접점", "담당자확인", "부적합"]
+    },
+    "customer_db_eligible": {
+      "type": "string",
+      "enum": ["Y", "N"]
+    },
+    "customer_db_block_reason": { "type": "string" }
   }
 }
