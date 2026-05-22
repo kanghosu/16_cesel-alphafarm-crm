@@ -12,6 +12,7 @@ function onOpen() {
     .addItem("타깃리스트 점수화", "scoreTargetList")
     .addItem("검증완료 고객DB 반영", "promoteQualifiedTargets")
     .addSeparator()
+    .addItem("5/22 접촉기록·고객DB 반영", "upsertMay22ContactAndCustomerData")
     .addItem("인터퓨어포스 업데이트", "upsertInterPurePosLead")
     .addSeparator()
     .addItem("Gmail 답장 확인", "checkGmailReplies")
